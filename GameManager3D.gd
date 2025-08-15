@@ -23,6 +23,9 @@ var coins = 0
 var xp = 0
 var game_running = true
 
+# Input tracking
+var _n_key_was_pressed = false
+
 # Game mode
 enum GameMode { RUNNER, COMBAT }
 var current_mode = GameMode.RUNNER
@@ -108,8 +111,6 @@ func setup_background_music():
 	var music_files = [
 		"res://chiptunes awesomeness.mp3",
 		"res://chiptunes awesomeness 2.mp3", 
-		"res://the brass and the blade  (Remix) chiptunes.mp3",
-		"res://background_music.mp3"  # Keep the original as backup
 	]
 	
 	# Randomly select a music file
@@ -139,7 +140,7 @@ func setup_background_music():
 		# Start playing
 		background_music_player.play()
 		print("🎵 Background music loaded and playing: ", selected_music.get_file())
-		print("🎮 Music controls: M = toggle, +/- = volume")
+		print("🎮 Music controls: M = toggle, +/- = volume, N = next track")
 	else:
 		print("❌ Warning: Could not load selected music file")
 		# Still add sound effects player
@@ -148,9 +149,7 @@ func setup_background_music():
 # Available music files for random selection
 var available_music_files = [
 	"res://chiptunes awesomeness.mp3",
-	"res://chiptunes awesomeness 2.mp3", 
-	"res://the brass and the blade  (Remix) chiptunes.mp3",
-	"res://background_music.mp3"
+	"res://chiptunes awesomeness 2.mp3"
 ]
 var current_music_index = 0
 
@@ -278,8 +277,11 @@ func _process(delta):
 	update_ui()
 	
 	# Handle music controls (work even when game is paused)
-	if Input.is_action_just_pressed("ui_accept"):  # Enter key to change music
+	if Input.is_physical_key_pressed(KEY_N) and not _n_key_was_pressed:
 		change_music()
+		_n_key_was_pressed = true
+	elif not Input.is_physical_key_pressed(KEY_N):
+		_n_key_was_pressed = false
 	
 	# Handle restart
 	if not game_running and (Input.is_action_just_pressed("move_left") or Input.is_action_just_pressed("move_right")):
