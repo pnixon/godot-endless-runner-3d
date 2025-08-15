@@ -1,0 +1,39 @@
+# Godot 4+ specific ignores
+.godot/
+.import/
+
+# Godot-specific ignores
+*.tmp
+*.translation
+*.import
+
+# OS specific ignores
+.DS_Store
+Thumbs.db
+
+# Editor specific ignores
+*.swp
+*.swo
+*~
+
+# Build outputs
+export/
+export_presets.cfg
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+
+# IDE files
+.vscode/
+.idea/
+
+# Audio files (optional - remove this line if you want to include audio in repo)
+# *.mp3
+# *.wav
+# *.ogg
