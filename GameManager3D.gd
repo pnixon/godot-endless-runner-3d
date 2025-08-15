@@ -104,8 +104,19 @@ func setup_background_music():
 	sound_effects_player.name = "SoundEffectsPlayer"
 	sound_effects_player.volume_db = linear_to_db(sfx_volume)
 	
-	# Load the music file
-	var music_stream = load("res://background_music.mp3")
+	# Load a random music file from available chiptunes
+	var music_files = [
+		"res://chiptunes awesomeness.mp3",
+		"res://chiptunes awesomeness 2.mp3", 
+		"res://the brass and the blade  (Remix) chiptunes.mp3",
+		"res://background_music.mp3"  # Keep the original as backup
+	]
+	
+	# Randomly select a music file
+	var selected_music = music_files[randi() % music_files.size()]
+	print("🎵 Randomly selected music: ", selected_music)
+	
+	var music_stream = load(selected_music)
 	if music_stream:
 		background_music_player.stream = music_stream
 		background_music_player.volume_db = linear_to_db(music_volume)
@@ -127,12 +138,50 @@ func setup_background_music():
 		
 		# Start playing
 		background_music_player.play()
-		print("Background music loaded and playing: background_music.mp3")
-		print("Music controls: M = toggle, +/- = volume")
+		print("🎵 Background music loaded and playing: ", selected_music.get_file())
+		print("🎮 Music controls: M = toggle, +/- = volume")
 	else:
-		print("Warning: Could not load background_music.mp3")
+		print("❌ Warning: Could not load selected music file")
 		# Still add sound effects player
 		add_child(sound_effects_player)
+
+# Available music files for random selection
+var available_music_files = [
+	"res://chiptunes awesomeness.mp3",
+	"res://chiptunes awesomeness 2.mp3", 
+	"res://the brass and the blade  (Remix) chiptunes.mp3",
+	"res://background_music.mp3"
+]
+var current_music_index = 0
+
+func change_music():
+	"""Change to a different random music track"""
+	if not background_music_player:
+		return
+	
+	# Select a different track (not the current one)
+	var new_index = randi() % available_music_files.size()
+	while new_index == current_music_index and available_music_files.size() > 1:
+		new_index = randi() % available_music_files.size()
+	
+	current_music_index = new_index
+	var selected_music = available_music_files[current_music_index]
+	
+	print("🎵 Changing music to: ", selected_music.get_file())
+	
+	var music_stream = load(selected_music)
+	if music_stream:
+		background_music_player.stop()
+		background_music_player.stream = music_stream
+		
+		# Set loop property
+		if music_stream is AudioStreamMP3:
+			music_stream.loop = true
+		elif music_stream is AudioStreamOggVorbis:
+			music_stream.loop = true
+		
+		background_music_player.play()
+		print("🎵 Now playing: ", selected_music.get_file())
 
 func set_music_volume(volume: float):
 	# Set music volume (0.0 to 1.0)
@@ -227,6 +276,10 @@ func _process(delta):
 	
 	# Always update UI
 	update_ui()
+	
+	# Handle music controls (work even when game is paused)
+	if Input.is_action_just_pressed("ui_accept"):  # Enter key to change music
+		change_music()
 	
 	# Handle restart
 	if not game_running and (Input.is_action_just_pressed("move_left") or Input.is_action_just_pressed("move_right")):
