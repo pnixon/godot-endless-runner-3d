@@ -4,7 +4,7 @@
 [ext_resource type="Script" path="res://Player3D.gd" id="2"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_1"]
-size = Vector3(1, 2, 1)
+size = Vector3(0.8, 1.8, 0.8)
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_1"]
 radius = 0.5

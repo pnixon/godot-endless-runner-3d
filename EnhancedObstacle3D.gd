@@ -99,10 +99,18 @@ func _process_setup():
 	
 	mesh_instance.material_override = telegraph_material
 	
-	# Set up collision shape
+	# Set up collision shape - MUCH MORE PRECISE for lane-based gameplay
 	var shape = BoxShape3D.new()
-	shape.size = Vector3(hazard_data.size.x, hazard_data.size.y, 1.0)  # Convert 2D size to 3D
+	# Make collision shapes smaller and more precise
+	var precise_size = Vector3(
+		min(hazard_data.size.x * 0.7, 0.8),  # Narrower width, max 0.8
+		hazard_data.size.y * 0.8,            # Slightly shorter height
+		0.8                                   # Consistent depth
+	)
+	shape.size = precise_size
 	collision_shape.shape = shape
+	
+	print("Hazard collision size: ", precise_size, " at position: ", position)
 	
 	# Set telegraph timer
 	telegraph_timer = hazard_data.telegraph_time

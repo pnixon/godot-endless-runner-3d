@@ -7,9 +7,9 @@ signal obstacle_avoided
 signal coin_collected
 signal xp_collected
 
-# 3D Movement constants - CRUNCHY SETTINGS
+# 3D Movement constants - ULTRA-CRUNCHY SETTINGS
 const SPEED = 12.0  # Faster base speed
-const JUMP_VELOCITY = 18.0  # Higher initial jump velocity
+const JUMP_VELOCITY = 16.0  # Reduced for quicker, less floaty jumps
 const SLIDE_VELOCITY = -12.0  # Faster slide
 
 # Lane positions (X coordinates)
@@ -27,8 +27,8 @@ var is_jumping = false
 var is_sliding = false
 var jump_timer = 0.0
 var slide_timer = 0.0
-const JUMP_DURATION = 0.5  # Shorter jump duration for snappier feel
-const SLIDE_DURATION = 0.4  # Shorter slide for snappier feel
+const JUMP_DURATION = 0.3  # Much shorter jump duration for ultra-snappy feel
+const SLIDE_DURATION = 0.3  # Shorter slide for snappier feel
 
 # Movement smoothing - CRUNCHY SETTINGS
 var movement_speed = 35.0  # Much faster lateral movement
@@ -60,9 +60,10 @@ var stamina_drain_rate = 40.0  # Stamina per second when using abilities
 var detection_area: Area3D
 var detection_shape: CollisionShape3D
 
-# Get gravity from the project settings and enhance it for crunchier jumps
-var gravity = ProjectSettings.get_setting("physics/3d/default_gravity") * 2.0  # Double gravity for less floaty feel
-var jump_gravity_multiplier = 1.5  # Extra gravity when falling from jump
+# Get gravity from the project settings and enhance it for ultra-crunchy jumps
+var gravity = ProjectSettings.get_setting("physics/3d/default_gravity") * 3.5  # Much higher gravity
+var jump_gravity_multiplier = 2.5  # Heavy extra gravity when falling from jump
+var coyote_time = 0.1  # Brief moment to still jump after leaving ground
 
 func _ready():
 	add_to_group("player")
@@ -89,14 +90,14 @@ func _ready():
 	# Connect the area detection signal
 	detection_area.area_entered.connect(_on_hazard_area_entered)
 	
-	# Set up collision shape
+	# Set up collision shape - MUCH MORE PRECISE for lane-based gameplay
 	var shape = BoxShape3D.new()
-	shape.size = Vector3(1.0, 2.0, 1.0)
+	shape.size = Vector3(0.8, 1.8, 0.8)  # Smaller, more precise collision
 	$CollisionShape3D.shape = shape
 	
-	# Use the same shape for detection area
+	# Detection area should be even more precise - only detect in same lane
 	var detection_shape_resource = BoxShape3D.new()
-	detection_shape_resource.size = Vector3(1.2, 2.2, 1.2)  # Slightly larger
+	detection_shape_resource.size = Vector3(0.9, 1.9, 0.9)  # Just slightly larger than player
 	detection_shape.shape = detection_shape_resource
 	
 	# Create stamina bar
@@ -232,10 +233,13 @@ func debug_health_bar():
 	print("========================")
 
 func _physics_process(delta):
-	# Handle enhanced gravity for crunchy jumps
+	# Handle ULTRA-enhanced gravity for non-floaty jumps
 	if not is_on_floor():
-		var gravity_multiplier = jump_gravity_multiplier if velocity.y < 0 else 1.0
+		var gravity_multiplier = jump_gravity_multiplier if velocity.y < 0 else 1.8  # Heavy gravity even going up
 		velocity.y -= gravity * gravity_multiplier * delta
+		
+		# Cap falling speed to prevent going through floor
+		velocity.y = max(velocity.y, -50.0)
 	
 	# Update timers
 	movement_cooldown -= delta
@@ -535,6 +539,28 @@ func _on_hazard_area_entered(area):
 	print("=== PLAYER COLLISION DETECTED ===")
 	print("Area name: ", area.name)
 	print("Player health before: ", current_health, "/", MAX_HEALTH)
+	
+	# LANE-BASED COLLISION VALIDATION
+	# Check if hazard is actually in the same lane as player
+	var hazard_position = area.global_position
+	var player_position = global_position
+	
+	# Calculate which lane the hazard is in
+	var hazard_lane = -1
+	var min_distance = 999.0
+	for i in range(LANE_POSITIONS.size()):
+		var distance = abs(hazard_position.x - LANE_POSITIONS[i])
+		if distance < min_distance:
+			min_distance = distance
+			hazard_lane = i
+	
+	# Only process collision if hazard is in same lane as player
+	if hazard_lane != current_lane:
+		print("COLLISION IGNORED - Hazard in lane ", hazard_lane, " but player in lane ", current_lane)
+		print("Hazard X: ", hazard_position.x, " Player X: ", player_position.x)
+		return
+	
+	print("VALID COLLISION - Both in lane ", current_lane)
 	
 	# Handle different types of obstacles/pickups
 	if area.has_method("get_hazard_type"):
