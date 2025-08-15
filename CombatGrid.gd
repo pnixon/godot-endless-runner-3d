@@ -1,6 +1,11 @@
 class_name CombatGrid
 extends Node2D
 
+# Combat signals
+signal combat_ended
+signal player_won
+signal player_lost
+
 # Enemy states
 enum EnemyState {
 	IDLE,
@@ -390,6 +395,7 @@ func end_combat():
 	initialize_grid()
 	
 	print("Combat ended")
+	combat_ended.emit()
 
 func _process(delta):
 	if not combat_active:
@@ -921,7 +927,7 @@ func check_combat_end():
 	# Check if player is dead
 	if not actors.has(player_actor_id):
 		print("Player defeated! Game Over!")
-		get_tree().call_group("game_manager", "combat_lost")
+		player_lost.emit()
 		end_combat()
 		return
 	
@@ -933,7 +939,7 @@ func check_combat_end():
 	
 	if enemies_alive == 0:
 		print("All enemies defeated! Victory!")
-		get_tree().call_group("game_manager", "combat_won")
+		player_won.emit()
 		end_combat()
 		return
 	
