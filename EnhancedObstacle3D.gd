@@ -294,7 +294,7 @@ func _on_body_entered(body):
 				return_to_pool()
 			
 			HazardData.HazardType.ENEMY_MARKER:
-				# Trigger combat encounter
+				# Trigger combat encounter (fix parameter order: formation_id first, then lane)
 				print("Player hit enemy marker! Formation: ", hazard_data.enemy_formation_id)
 				get_tree().call_group("game_manager", "start_combat", hazard_data.enemy_formation_id, hazard_data.lane)
 				return_to_pool()

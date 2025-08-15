@@ -334,8 +334,8 @@ func start_combat(formation_id: String, encounter_lane: int):
 	# Pause runner mode
 	game_running = false
 	
-	# Start combat
-	combat_grid.start_combat(formation_id, player_lane_at_encounter)
+	# Start combat (fix parameter order: player_lane first, then formation_id)
+	combat_grid.start_combat(player_lane_at_encounter, formation_id)
 
 func _on_combat_ended():
 	print("Combat ended, returning to runner mode")

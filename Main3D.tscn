@@ -1,7 +1,7 @@
-[gd_scene load_steps=8 format=3 uid="uid://eb8bsfpekeeu3d"]
+[gd_scene load_steps=8 format=3]
 
-[ext_resource type="Script" uid="uid://br1qdnow3cmfj" path="res://GameManager3D.gd" id="1"]
-[ext_resource type="Script" uid="uid://gad355jhly4x" path="res://Player3D.gd" id="2"]
+[ext_resource type="Script" path="res://GameManager3D.gd" id="1"]
+[ext_resource type="Script" path="res://Player3D.gd" id="2"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_1"]
 size = Vector3(1, 2, 1)
@@ -110,8 +110,8 @@ offset_top = 20.0
 offset_right = -20.0
 offset_bottom = 140.0
 text = "A/D or ←→: Switch lanes
-W or ↑: Jump (avoid ground hazards)
-S or ↓: Slide (avoid overhead hazards)
+W/S or ↑/↓: Move forward/backward
+Space: Jump | Shift: Slide
 
 Perfect dodges build streak multiplier!
 
