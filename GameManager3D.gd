@@ -258,8 +258,21 @@ func spawn_hazard():
 			# Fallback to ground spikes
 			hazard_data = HazardData.create_ground_spikes(lane)
 	
-	# Set 3D position
-	obstacle.position = Vector3(LANE_POSITIONS[lane], 1.0, -SPAWN_DISTANCE)
+	# Set 3D position based on hazard type
+	var y_position = 1.0  # Default position
+	
+	match hazard_type:
+		"ground_spikes":
+			y_position = 0.2  # Ground level - spikes stick up from ground
+		"overhead_barrier":
+			y_position = 2.5  # Head level - player needs to duck
+		"coin", "xp", "health_potion":
+			y_position = 1.5  # Chest level for pickups
+		_:
+			y_position = 1.0  # Default
+	
+	obstacle.position = Vector3(LANE_POSITIONS[lane], y_position, -SPAWN_DISTANCE)
+	print("Spawned ", hazard_type, " at Y position: ", y_position)
 	
 	obstacle.setup_hazard(hazard_data)
 	add_child(obstacle)

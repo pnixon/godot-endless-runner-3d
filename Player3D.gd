@@ -251,13 +251,11 @@ func _physics_process(delta):
 	
 	# Handle movement input with cooldown
 	if movement_cooldown <= 0:
-		# Handle lane switching (A/D keys) - INSTANT SNAP movement
+		# Handle lane switching (A/D keys) - SMOOTH but fast movement
 		if (Input.is_action_just_pressed("move_left") or has_buffered_input("move_left")) and current_lane > 0 and not is_sliding:
 			current_lane -= 1
 			target_x = LANE_POSITIONS[current_lane]
-			# INSTANT movement - no lerping for crunchiness
-			position.x = target_x
-			print("SNAP to lane ", current_lane, " (X: ", target_x, ")")
+			print("Moving to lane ", current_lane, " (X: ", target_x, ")")
 			create_movement_effect("left")
 			movement_cooldown = MOVEMENT_COOLDOWN_TIME
 			clear_buffered_input("move_left")
@@ -265,21 +263,17 @@ func _physics_process(delta):
 		elif (Input.is_action_just_pressed("move_right") or has_buffered_input("move_right")) and current_lane < 2 and not is_sliding:
 			current_lane += 1
 			target_x = LANE_POSITIONS[current_lane]
-			# INSTANT movement - no lerping for crunchiness
-			position.x = target_x
-			print("SNAP to lane ", current_lane, " (X: ", target_x, ")")
+			print("Moving to lane ", current_lane, " (X: ", target_x, ")")
 			create_movement_effect("right")
 			movement_cooldown = MOVEMENT_COOLDOWN_TIME
 			clear_buffered_input("move_right")
 			moved = true
 		
-		# Handle row movement (W/S keys) - INSTANT SNAP movement
+		# Handle row movement (W/S keys) - SMOOTH but fast movement
 		elif (Input.is_action_just_pressed("move_forward") or has_buffered_input("move_forward")) and current_row < 3 and not is_sliding:
 			current_row += 1
 			target_z = ROW_POSITIONS[current_row]
-			# INSTANT movement - no lerping for crunchiness
-			position.z = target_z
-			print("SNAP to row ", current_row, " (Z: ", target_z, ")")
+			print("Moving to row ", current_row, " (Z: ", target_z, ")")
 			create_movement_effect("forward")
 			movement_cooldown = MOVEMENT_COOLDOWN_TIME
 			clear_buffered_input("move_forward")
@@ -287,9 +281,7 @@ func _physics_process(delta):
 		elif (Input.is_action_just_pressed("move_backward") or has_buffered_input("move_backward")) and current_row > 0 and not is_sliding:
 			current_row -= 1
 			target_z = ROW_POSITIONS[current_row]
-			# INSTANT movement - no lerping for crunchiness
-			position.z = target_z
-			print("SNAP to row ", current_row, " (Z: ", target_z, ")")
+			print("Moving to row ", current_row, " (Z: ", target_z, ")")
 			create_movement_effect("backward")
 			movement_cooldown = MOVEMENT_COOLDOWN_TIME
 			clear_buffered_input("move_backward")
@@ -331,12 +323,19 @@ func _physics_process(delta):
 	
 	if is_sliding:
 		slide_timer -= delta
+		# Make player crouch lower when sliding
+		scale.y = lerp(scale.y, 0.5, 15.0 * delta)  # Squash player down
 		if slide_timer <= 0:
 			is_sliding = false
 			print("Slide ended")
+	else:
+		# Return to normal height when not sliding
+		scale.y = lerp(scale.y, 1.0, 15.0 * delta)
 	
-	# NO SMOOTH MOVEMENT - we do instant snapping for crunchiness!
-	# position.x and position.z are set instantly in the input handling above
+	# SMOOTH movement to target positions - fast but not jarring
+	var movement_lerp_speed = 20.0  # Fast but smooth interpolation
+	position.x = lerp(position.x, target_x, movement_lerp_speed * delta)
+	position.z = lerp(position.z, target_z, movement_lerp_speed * delta)
 	
 	# Regenerate stamina
 	if current_stamina < MAX_STAMINA:
@@ -569,6 +568,7 @@ func _on_hazard_area_entered(area):
 		
 		match hazard_type:
 			"GROUND_SPIKES":
+				# Ground spikes are avoided by jumping
 				if not is_jumping:
 					print("Hit ground spikes - taking 20 damage!")
 					take_damage(20.0)
@@ -579,6 +579,15 @@ func _on_hazard_area_entered(area):
 				area.queue_free()  # Remove the hazard
 			
 			"OVERHEAD_BARRIER":
+				# Overhead barriers are avoided by sliding (crouching)
+				if not is_sliding:
+					print("Hit overhead barrier - taking 15 damage!")
+					take_damage(15.0)
+					obstacle_hit.emit()
+				else:
+					print("Avoided overhead barrier by sliding!")
+					obstacle_avoided.emit()
+				area.queue_free()  # Remove the hazard
 				if not is_sliding:
 					print("Hit overhead barrier - taking 15 damage!")
 					take_damage(15.0)
