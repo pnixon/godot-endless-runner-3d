@@ -110,11 +110,20 @@ func setup_background_music():
 		background_music_player.stream = music_stream
 		background_music_player.volume_db = linear_to_db(music_volume)
 		background_music_player.autoplay = false
-		background_music_player.loop = true  # Loop the music
+		
+		# In Godot 4, set loop on the stream itself
+		if music_stream is AudioStreamMP3:
+			music_stream.loop = true
+		elif music_stream is AudioStreamOggVorbis:
+			music_stream.loop = true
+		# For other stream types, they may not support looping
 		
 		# Add to scene tree
 		add_child(background_music_player)
 		add_child(sound_effects_player)
+		
+		# Connect finished signal for manual looping fallback
+		background_music_player.finished.connect(_on_music_finished)
 		
 		# Start playing
 		background_music_player.play()
@@ -140,6 +149,12 @@ func toggle_music():
 		else:
 			background_music_player.play()
 			print("Music started")
+
+func _on_music_finished():
+	# Manual looping fallback if stream doesn't support native looping
+	if background_music_player and game_running:
+		background_music_player.play()
+		print("Music looped manually")
 
 func play_sound_effect(frequency: float, duration: float = 0.1):
 	# Generate a simple tone for sound effects

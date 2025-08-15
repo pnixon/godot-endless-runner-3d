@@ -10,6 +10,15 @@
 - CombatGrid.start_combat expects: `(player_lane: int, formation_id: String)`
 - Fixed internal call to use correct parameter order
 
+### ✅ Combat Signal Connection Errors
+**Error**: `Attempt to connect nonexistent signal 'combat_ended' to callable`
+
+**Solution**: Added missing signals to CombatGrid class
+- Added `signal combat_ended`
+- Added `signal player_won` 
+- Added `signal player_lost`
+- Updated combat end logic to emit these signals instead of using call_group
+
 ## Common Issues & Solutions
 
 ### 1. Scene Loading Issues
