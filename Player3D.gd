@@ -7,10 +7,10 @@ signal obstacle_avoided
 signal coin_collected
 signal xp_collected
 
-# 3D Movement constants
-const SPEED = 8.0
-const JUMP_VELOCITY = 12.0
-const SLIDE_VELOCITY = -8.0
+# 3D Movement constants - CRUNCHY SETTINGS
+const SPEED = 12.0  # Faster base speed
+const JUMP_VELOCITY = 18.0  # Higher initial jump velocity
+const SLIDE_VELOCITY = -12.0  # Faster slide
 
 # Lane positions (X coordinates)
 const LANE_POSITIONS = [-3.0, 0.0, 3.0]  # Left, Center, Right lanes
@@ -27,11 +27,11 @@ var is_jumping = false
 var is_sliding = false
 var jump_timer = 0.0
 var slide_timer = 0.0
-const JUMP_DURATION = 0.8
-const SLIDE_DURATION = 0.6
+const JUMP_DURATION = 0.5  # Shorter jump duration for snappier feel
+const SLIDE_DURATION = 0.4  # Shorter slide for snappier feel
 
-# Movement smoothing
-var movement_speed = 15.0
+# Movement smoothing - CRUNCHY SETTINGS
+var movement_speed = 35.0  # Much faster lateral movement
 var original_y_position = 1.0  # Ground level
 
 # Health system
@@ -40,9 +40,9 @@ var current_health = MAX_HEALTH
 var health_bar: ColorRect
 var health_bg: ColorRect
 
-# Movement cooldown to prevent spam
+# Movement cooldown to prevent spam - REDUCED for crunchiness
 var movement_cooldown = 0.0
-const MOVEMENT_COOLDOWN_TIME = 0.15
+const MOVEMENT_COOLDOWN_TIME = 0.08  # Much shorter cooldown for rapid inputs
 
 # Input buffering for responsive controls
 var input_buffer_time = 0.1  # 100ms buffer window
@@ -60,8 +60,9 @@ var stamina_drain_rate = 40.0  # Stamina per second when using abilities
 var detection_area: Area3D
 var detection_shape: CollisionShape3D
 
-# Get gravity from the project settings to be synced with RigidBody nodes
-var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
+# Get gravity from the project settings and enhance it for crunchier jumps
+var gravity = ProjectSettings.get_setting("physics/3d/default_gravity") * 2.0  # Double gravity for less floaty feel
+var jump_gravity_multiplier = 1.5  # Extra gravity when falling from jump
 
 func _ready():
 	add_to_group("player")
@@ -114,14 +115,14 @@ func setup_camera():
 	# The camera is already set up in the scene, but we can adjust it here
 	var camera = $Camera3D
 	if camera:
-		# Position camera behind and above player for 3D runner view
-		camera.position = Vector3(0, 4, 6)
-		camera.rotation_degrees = Vector3(-15, 0, 0)
+		# Position camera much higher and further back for better overview
+		camera.position = Vector3(0, 8, 8)  # Higher up (8 vs 4) and further back
+		camera.rotation_degrees = Vector3(-25, 0, 0)  # Steeper angle (-25 vs -15)
 		
-		# Adjust FOV for better view
-		camera.fov = 75.0
+		# Adjust FOV for better view of the action
+		camera.fov = 65.0  # Slightly tighter FOV for more focused view
 		
-		print("3D Camera configured for endless runner view")
+		print("3D Camera configured: High overview angle for crunchy gameplay")
 
 func _input(event):
 	# Press H to debug health bar
@@ -231,9 +232,10 @@ func debug_health_bar():
 	print("========================")
 
 func _physics_process(delta):
-	# Handle gravity
+	# Handle enhanced gravity for crunchy jumps
 	if not is_on_floor():
-		velocity.y -= gravity * delta
+		var gravity_multiplier = jump_gravity_multiplier if velocity.y < 0 else 1.0
+		velocity.y -= gravity * gravity_multiplier * delta
 	
 	# Update timers
 	movement_cooldown -= delta
@@ -245,11 +247,13 @@ func _physics_process(delta):
 	
 	# Handle movement input with cooldown
 	if movement_cooldown <= 0:
-		# Handle lane switching (A/D keys) - INSTANT movement
+		# Handle lane switching (A/D keys) - INSTANT SNAP movement
 		if (Input.is_action_just_pressed("move_left") or has_buffered_input("move_left")) and current_lane > 0 and not is_sliding:
 			current_lane -= 1
 			target_x = LANE_POSITIONS[current_lane]
-			print("Moving to lane ", current_lane, " (X: ", target_x, ")")
+			# INSTANT movement - no lerping for crunchiness
+			position.x = target_x
+			print("SNAP to lane ", current_lane, " (X: ", target_x, ")")
 			create_movement_effect("left")
 			movement_cooldown = MOVEMENT_COOLDOWN_TIME
 			clear_buffered_input("move_left")
@@ -257,17 +261,21 @@ func _physics_process(delta):
 		elif (Input.is_action_just_pressed("move_right") or has_buffered_input("move_right")) and current_lane < 2 and not is_sliding:
 			current_lane += 1
 			target_x = LANE_POSITIONS[current_lane]
-			print("Moving to lane ", current_lane, " (X: ", target_x, ")")
+			# INSTANT movement - no lerping for crunchiness
+			position.x = target_x
+			print("SNAP to lane ", current_lane, " (X: ", target_x, ")")
 			create_movement_effect("right")
 			movement_cooldown = MOVEMENT_COOLDOWN_TIME
 			clear_buffered_input("move_right")
 			moved = true
 		
-		# Handle row movement (W/S keys) - INSTANT movement
+		# Handle row movement (W/S keys) - INSTANT SNAP movement
 		elif (Input.is_action_just_pressed("move_forward") or has_buffered_input("move_forward")) and current_row < 3 and not is_sliding:
 			current_row += 1
 			target_z = ROW_POSITIONS[current_row]
-			print("Moving to row ", current_row, " (Z: ", target_z, ")")
+			# INSTANT movement - no lerping for crunchiness
+			position.z = target_z
+			print("SNAP to row ", current_row, " (Z: ", target_z, ")")
 			create_movement_effect("forward")
 			movement_cooldown = MOVEMENT_COOLDOWN_TIME
 			clear_buffered_input("move_forward")
@@ -275,7 +283,9 @@ func _physics_process(delta):
 		elif (Input.is_action_just_pressed("move_backward") or has_buffered_input("move_backward")) and current_row > 0 and not is_sliding:
 			current_row -= 1
 			target_z = ROW_POSITIONS[current_row]
-			print("Moving to row ", current_row, " (Z: ", target_z, ")")
+			# INSTANT movement - no lerping for crunchiness
+			position.z = target_z
+			print("SNAP to row ", current_row, " (Z: ", target_z, ")")
 			create_movement_effect("backward")
 			movement_cooldown = MOVEMENT_COOLDOWN_TIME
 			clear_buffered_input("move_backward")
@@ -321,9 +331,8 @@ func _physics_process(delta):
 			is_sliding = false
 			print("Slide ended")
 	
-	# Smooth movement to target positions
-	position.x = lerp(position.x, target_x, movement_speed * delta)
-	position.z = lerp(position.z, target_z, movement_speed * delta)
+	# NO SMOOTH MOVEMENT - we do instant snapping for crunchiness!
+	# position.x and position.z are set instantly in the input handling above
 	
 	# Regenerate stamina
 	if current_stamina < MAX_STAMINA:
@@ -352,8 +361,74 @@ func update_input_buffers(delta: float):
 			buffered_inputs.erase(action)
 
 func create_movement_effect(direction: String):
-	# Create visual feedback for movement
-	print("Movement effect: ", direction)
+	# Create visual and audio feedback for crunchy movement
+	print("CRUNCHY movement effect: ", direction)
+	
+	# Add screen shake effect for crunchiness
+	var camera = $Camera3D
+	if camera:
+		# Quick camera shake
+		var original_pos = camera.position
+		camera.position += Vector3(randf_range(-0.1, 0.1), randf_range(-0.1, 0.1), 0)
+		
+		# Return to original position quickly
+		var tween = create_tween()
+		tween.tween_property(camera, "position", original_pos, 0.05)
+	
+	# Add particle effect or visual pop
+	create_movement_particles(direction)
+	
+	# Play crunchy sound effect
+	play_movement_sound(direction)
+
+func create_movement_particles(direction: String):
+	# Create quick particle burst for movement feedback
+	# For now, just a visual indicator - could add actual particles later
+	var indicator = MeshInstance3D.new()
+	var sphere = SphereMesh.new()
+	sphere.radius = 0.2
+	sphere.height = 0.4
+	indicator.mesh = sphere
+	
+	# Create glowing material
+	var material = StandardMaterial3D.new()
+	material.albedo_color = Color.CYAN
+	material.emission_enabled = true
+	material.emission = Color.CYAN * 0.8
+	indicator.material_override = material
+	
+	# Position slightly offset from player
+	var offset = Vector3.ZERO
+	match direction:
+		"left": offset = Vector3(-0.5, 0.5, 0)
+		"right": offset = Vector3(0.5, 0.5, 0)
+		"forward": offset = Vector3(0, 0.5, -0.5)
+		"backward": offset = Vector3(0, 0.5, 0.5)
+		"jump": offset = Vector3(0, 1.0, 0)
+		"slide": offset = Vector3(0, 0.2, 0)
+	
+	indicator.position = position + offset
+	get_parent().add_child(indicator)
+	
+	# Animate and remove
+	var tween = create_tween()
+	tween.parallel().tween_property(indicator, "scale", Vector3.ZERO, 0.3)
+	tween.parallel().tween_property(indicator, "position:y", indicator.position.y + 1, 0.3)
+	tween.tween_callback(indicator.queue_free)
+
+func play_movement_sound(direction: String):
+	# Play different pitched sounds for different movements
+	var pitch = 1.0
+	match direction:
+		"left": pitch = 0.8
+		"right": pitch = 1.2
+		"forward": pitch = 1.1
+		"backward": pitch = 0.9
+		"jump": pitch = 1.5
+		"slide": pitch = 0.6
+	
+	# For now just print - could add actual audio later
+	print("CRUNCH sound: ", direction, " at pitch ", pitch)
 
 func update_stamina_bar():
 	if not stamina_bar:

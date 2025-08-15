@@ -1,7 +1,7 @@
 extends Area3D
 
-# Movement speed (towards player)
-const SPEED = 15.0
+# Movement speed (towards player) - INCREASED for crunchy gameplay
+const SPEED = 22.0  # Much faster hazards for intense action
 
 # Visual components
 var mesh_instance: MeshInstance3D

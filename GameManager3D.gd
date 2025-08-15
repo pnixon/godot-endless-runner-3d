@@ -27,23 +27,23 @@ var game_running = true
 enum GameMode { RUNNER, COMBAT }
 var current_mode = GameMode.RUNNER
 
-# Spawning system
+# Spawning system - CRUNCHY SETTINGS
 var obstacle_spawn_timer = 0.0
-var base_spawn_interval = 2.5  # Slightly slower for 3D
+var base_spawn_interval = 1.8  # Faster spawning for intense action
 var current_spawn_interval = base_spawn_interval
 var difficulty_timer = 0.0
 var distance_traveled = 0.0
 
 # 3D Spawning positions
-const SPAWN_DISTANCE = 50.0  # How far ahead to spawn obstacles
+const SPAWN_DISTANCE = 45.0  # Closer spawn distance for more intense action
 const LANE_POSITIONS = [-3.0, 0.0, 3.0]  # X positions for lanes
 const ROW_POSITIONS = [-8.0, -5.0, -2.0, 1.0]  # Z positions for rows
 
-# Enemy spawning system
+# Enemy spawning system - MORE FREQUENT
 var enemy_spawn_timer = 0.0
-var base_enemy_spawn_interval = 15.0  # Base time between enemy encounters (seconds)
-var min_enemy_spawn_interval = 8.0    # Minimum time between encounters
-var enemy_spawn_distance_threshold = 200.0  # Minimum distance before first enemy
+var base_enemy_spawn_interval = 12.0  # More frequent enemy encounters
+var min_enemy_spawn_interval = 6.0    # Minimum time between encounters
+var enemy_spawn_distance_threshold = 150.0  # Closer distance threshold
 var last_enemy_spawn_distance = 0.0
 
 # Combat system
@@ -200,11 +200,11 @@ func _process(delta):
 	# Update biome based on distance
 	update_biome()
 	
-	# Increase difficulty over time
-	if difficulty_timer >= 10.0:  # Every 10 seconds
-		current_spawn_interval = max(1.0, current_spawn_interval - 0.05)  # Minimum 1 second
+	# Increase difficulty over time - FASTER RAMP UP
+	if difficulty_timer >= 7.0:  # Every 7 seconds (was 10)
+		current_spawn_interval = max(0.6, current_spawn_interval - 0.08)  # Faster decrease, lower minimum
 		difficulty_timer = 0.0
-		print("Difficulty increased! Spawn interval: ", current_spawn_interval)
+		print("CRUNCHY difficulty increased! Spawn interval: ", current_spawn_interval)
 	
 	# Spawn regular hazards
 	if obstacle_spawn_timer >= current_spawn_interval:

@@ -19,6 +19,14 @@
 - Added `signal player_lost`
 - Updated combat end logic to emit these signals instead of using call_group
 
+### ✅ Audio Loop Property Error
+**Error**: `invalid assignment of property or key 'loop' with value type of 'bool' on AudioStreamPlayer`
+
+**Solution**: Fixed for Godot 4 compatibility
+- In Godot 4, `loop` property must be set on the AudioStream, not AudioStreamPlayer
+- Added type checking for AudioStreamMP3 and AudioStreamOggVorbis
+- Added manual looping fallback using `finished` signal
+
 ## Common Issues & Solutions
 
 ### 1. Scene Loading Issues
