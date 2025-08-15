@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://enhanced_obstacle_3d"]
+
+[ext_resource type="Script" path="res://EnhancedObstacle3D.gd" id="1"]
+
+[node name="EnhancedObstacle3D" type="Area3D"]
+script = ExtResource("1")
