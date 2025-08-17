@@ -7,172 +7,201 @@
   - Create mobile-optimized UI scaling and screen adaptation system
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 5.1, 5.2_
 
-- [ ] 2. Create core RPG data structures and save system
-  - [ ] 2.1 Implement PlayerData resource with stats, equipment, and progression tracking
+- [x] 2. Create core RPG data structures and save system
+  - [x] 2.1 Implement PlayerData resource with stats, equipment, and progression tracking
     - Create PlayerData resource class with level, XP, stats, and equipment slots
     - Implement PlayerStats class with health, mana, attack, defense calculations
     - Add skill point allocation and ability unlock tracking
     - _Requirements: 4.1, 4.4_
 
-  - [ ] 2.2 Create CompanionData and equipment data models
+  - [x] 2.2 Create CompanionData and equipment data models
     - Implement CompanionData resource with bond levels, abilities, and equipment
     - Create Equipment resource class with stats, rarity, and visual data
     - Add CraftingRecipe and MaterialData resource classes
     - _Requirements: 3.2, 4.2, 4.5_
 
-  - [ ] 2.3 Build save system with local and cloud storage
+  - [x] 2.3 Build save system with local and cloud storage
     - Implement SaveDataManager with local file save/load functionality
     - Add Google Play Games Services integration for cloud saves
     - Create save data validation and corruption recovery systems
     - _Requirements: 5.4_
 
-- [ ] 3. Transform existing Player3D into RPG player system
-  - [ ] 3.1 Extend Player3D with RPG stats and equipment management
+- [x] 3. Transform existing Player3D into RPG player system
+  - [x] 3.1 Extend Player3D with RPG stats and equipment management
     - Add PlayerStats integration to existing Player3D health system
     - Implement EquipmentManager for weapon and armor visual updates
     - Create level-up system with stat increases and ability unlocks
     - _Requirements: 4.1, 4.3_
 
-  - [ ] 3.2 Add ability system and skill trees to player
+  - [x] 3.2 Add ability system and skill trees to player
     - Implement AbilitySystem with cooldowns and resource costs
     - Create skill tree UI for Warrior, Mage, and Rogue progression paths
     - Add ability execution during lane-based combat encounters
     - _Requirements: 4.4, 7.2_
 
-  - [ ] 3.3 Integrate companion coordination into player controller
+  - [x] 3.3 Integrate companion coordination into player controller
     - Add CompanionCoordinator to manage AI companion positioning
     - Implement companion command system for tactical control
     - Create formation management for lane-based party positioning
     - _Requirements: 3.1, 3.4_
 
-- [ ] 4. Implement companion AI and party management system
-  - [ ] 4.1 Create base CompanionAI class with auto-combat behavior
+- [-] 4. Implement enhanced combat system with dodging and blocking mechanics
+  - [x] 4.1 Create tactical combat controller with dodge and block mechanics
+    - Implement CombatController that extends existing lane-based movement with tactical actions
+    - Add dodge mechanics: left dodge, right dodge, and backward dodge to avoid damage
+    - Create block system with hold-to-block functionality and stamina consumption
+    - Integrate perfect dodge timing windows with bonus rewards and invincibility frames
+    - _Requirements: 7.1, 7.2, 7.3_
+
+  - [ ] 4.2 Add enemy attack patterns and telegraphing system
+    - Implement EnemyAttackSystem with telegraphed attacks that require specific dodge directions
+    - Create attack pattern database with visual and audio cues for incoming attacks
+    - Add enemy types with different attack patterns: frontal attacks, side swipes, area attacks
+    - Implement boss attack patterns with multi-phase telegraphing and combo sequences
+    - _Requirements: 7.1, 7.3, 7.4_
+
+  - [ ] 4.3 Build combat feedback and timing systems
+    - Create visual feedback system for successful dodges, blocks, and perfect timing
+    - Implement screen effects for critical moments: slow-motion on perfect dodges, screen shake on blocks
+    - Add audio feedback with distinct sounds for different combat actions and outcomes
+    - Create combo system that rewards consecutive successful dodges and attacks
+    - _Requirements: 7.1, 8.4_
+
+  - [ ] 4.4 Integrate mobile touch controls for combat actions
+    - Map swipe gestures to dodge directions: swipe left/right for side dodges, swipe down for back dodge
+    - Implement hold-to-block with touch and hold gesture recognition
+    - Add haptic feedback for combat actions: light vibration for dodges, strong for successful blocks
+    - Create visual indicators for touch zones and gesture recognition feedback
+    - _Requirements: 2.1, 2.2, 7.1_
+
+- [ ] 5. Implement companion AI and party management system
+  - [ ] 5.1 Create base CompanionAI class with auto-combat behavior
     - Implement CompanionAI extending CharacterBody3D with lane movement
     - Add auto-attack and ability usage AI decision making
     - Create companion health management and death/revival mechanics
     - _Requirements: 3.1, 3.2_
 
-  - [ ] 4.2 Build companion class specializations (Tank, Healer, DPS)
+  - [ ] 5.2 Build companion class specializations (Tank, Healer, DPS)
     - Implement Tank companion with defensive abilities and threat management
     - Create Healer companion with healing and support ability AI
     - Add DPS companion with offensive combo and positioning AI
     - _Requirements: 3.2_
 
-  - [ ] 4.3 Add bond system and companion dialogue management
+  - [ ] 5.3 Add bond system and companion dialogue management
     - Implement BondSystem tracking relationship levels and conversation triggers
     - Create DialogueManager for companion conversations and story events
     - Add bond level rewards with passive buffs and ability unlocks
     - _Requirements: 3.3, 3.5_
 
-- [ ] 5. Create hub world village system
-  - [ ] 5.1 Build village hub scene with interactive NPCs and areas
+- [ ] 6. Create hub world village system
+  - [ ] 6.1 Build village hub scene with interactive NPCs and areas
     - Create VillageHub scene with blacksmith, quest board, and companion areas
     - Implement NPC interaction system with dialogue and shop interfaces
     - Add village navigation with clear visual indicators for different areas
     - _Requirements: 6.1, 6.2_
 
-  - [ ] 5.2 Implement blacksmith crafting and equipment management
+  - [ ] 6.2 Implement blacksmith crafting and equipment management
     - Create BlacksmithSystem with crafting recipe management
     - Implement material inventory and crafting cost calculations
     - Add equipment comparison and upgrade preview systems
     - _Requirements: 4.2, 4.5, 6.2_
 
-  - [ ] 5.3 Add quest board and mission selection interface
+  - [ ] 6.3 Add quest board and mission selection interface
     - Implement QuestBoardSystem displaying available story and side missions
     - Create mission preview with objectives, rewards, and companion requirements
     - Add mission difficulty indicators and completion tracking
     - _Requirements: 6.3_
 
-- [ ] 6. Transform GameManager3D into mission controller system
-  - [ ] 6.1 Extend GameManager3D with story mission management
+- [ ] 7. Transform GameManager3D into mission controller system
+  - [ ] 7.1 Extend GameManager3D with story mission management
     - Add MissionController functionality to existing GameManager3D
     - Implement story event triggers and narrative moment handling
     - Create objective tracking and completion validation systems
     - _Requirements: 1.1, 1.3, 7.1_
 
-  - [ ] 6.2 Add mission types and structured gameplay progression
+  - [ ] 7.2 Add mission types and structured gameplay progression
     - Implement story missions with narrative events and companion dialogue
     - Create side quest system for material gathering and companion development
     - Add challenge missions with special rewards and replay value
     - _Requirements: 1.2, 6.4_
 
-  - [ ] 6.3 Integrate enhanced combat encounters with party management
+  - [ ] 7.3 Integrate enhanced combat encounters with party management
     - Extend existing combat system to include companion AI coordination
     - Add tactical combat transitions from runner mode to grid-based battles
     - Implement boss encounter mechanics with pattern-based attacks
     - _Requirements: 7.1, 7.3, 7.4_
 
-- [ ] 7. Enhance visual and audio systems for RPG experience
-  - [ ] 7.1 Upgrade 3D visuals with equipment visualization and character customization
+- [ ] 8. Enhance visual and audio systems for RPG experience
+  - [ ] 8.1 Upgrade 3D visuals with equipment visualization and character customization
     - Implement visual equipment system showing weapons and armor on characters
     - Add character customization options for player avatar appearance
     - Create companion visual variations based on equipment and bond levels
     - _Requirements: 8.1, 4.3_
 
-  - [ ] 7.2 Expand audio system with dynamic music and RPG sound effects
+  - [ ] 8.2 Expand audio system with dynamic music and RPG sound effects
     - Add biome-specific background music with smooth transitions
     - Implement combat music system with intensity-based track switching
     - Create RPG-specific sound effects for abilities, crafting, and dialogue
     - _Requirements: 8.2, 8.3_
 
-  - [ ] 7.3 Add particle effects and visual polish for abilities and combat
+  - [ ] 8.3 Add particle effects and visual polish for abilities and combat
     - Implement particle systems for player and companion abilities
     - Create visual feedback for crafting success, level-ups, and achievements
     - Add screen effects for critical hits, perfect dodges, and special moments
     - _Requirements: 8.4_
 
-- [ ] 8. Implement Android-specific optimizations and integrations
-  - [ ] 8.1 Add performance scaling and device-specific optimizations
+- [ ] 9. Implement Android-specific optimizations and integrations
+  - [ ] 9.1 Add performance scaling and device-specific optimizations
     - Implement automatic graphics quality scaling based on device performance
     - Create dynamic LOD system for 3D models and particle effects
     - Add memory management with garbage collection optimization for mobile
     - _Requirements: 9.1, 9.3, 9.4_
 
-  - [ ] 8.2 Integrate Google Play Services and billing system
+  - [ ] 9.2 Integrate Google Play Services and billing system
     - Add Google Play Games Services for achievements and leaderboards
     - Implement Google Play Billing for premium game purchase
     - Create achievement system tied to story progression and gameplay milestones
     - _Requirements: 5.3, 10.1_
 
-  - [ ] 8.3 Optimize file size and loading performance for mobile distribution
+  - [ ] 9.3 Optimize file size and loading performance for mobile distribution
     - Implement asset streaming and compression for reduced file size
     - Add loading screen optimization with progress indicators
     - Create efficient texture and audio compression for mobile devices
     - _Requirements: 9.2, 9.5_
 
-- [ ] 9. Build comprehensive game progression and content systems
-  - [ ] 9.1 Create story campaign with 6 chapters and narrative progression
+- [ ] 10. Build comprehensive game progression and content systems
+  - [ ] 10.1 Create story campaign with 6 chapters and narrative progression
     - Implement Chapter 1-2 with tutorial integration and companion introductions
     - Add Chapter 3-4 with advanced mechanics and story complexity
     - Create Chapter 5-6 with climactic battles and story resolution
     - _Requirements: 1.1, 1.2_
 
-  - [ ] 9.2 Add side quest system and optional content for replay value
+  - [ ] 10.2 Add side quest system and optional content for replay value
     - Implement companion-specific side quests for bond development
     - Create material gathering quests for crafting progression
     - Add challenge quests with unique rewards and achievement unlocks
     - _Requirements: 1.4, 6.4_
 
-  - [ ] 9.3 Implement complete crafting progression with material economy
+  - [ ] 10.3 Implement complete crafting progression with material economy
     - Create balanced material drop rates across different mission types
     - Add crafting progression tiers requiring story advancement
     - Implement legendary equipment crafting with rare material requirements
     - _Requirements: 4.2, 4.5_
 
-- [ ] 10. Final integration, testing, and Android release preparation
-  - [ ] 10.1 Integrate all systems and test complete gameplay flow
+- [ ] 11. Final integration, testing, and Android release preparation
+  - [ ] 11.1 Integrate all systems and test complete gameplay flow
     - Test full progression from tutorial through final chapter completion
     - Validate save/load functionality across all game systems
     - Ensure companion AI and party management work correctly in all scenarios
     - _Requirements: 1.5, 3.4, 7.5_
 
-  - [ ] 10.2 Perform Android device testing and optimization
+  - [ ] 11.2 Perform Android device testing and optimization
     - Test performance across low, mid, and high-end Android devices
     - Validate touch controls and haptic feedback on different screen sizes
     - Optimize battery usage and thermal performance for extended play sessions
     - _Requirements: 2.1, 2.2, 9.1, 9.3_
 
-  - [ ] 10.3 Implement monetization and prepare for Google Play Store release
+  - [ ] 11.3 Implement monetization and prepare for Google Play Store release
     - Add premium purchase flow with Google Play Billing integration
     - Create store listing assets and marketing materials
     - Implement analytics and crash reporting for post-launch support

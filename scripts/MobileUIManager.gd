@@ -85,10 +85,12 @@ func scale_ui_elements():
 	for node in ui_nodes:
 		if node is Control:
 			apply_mobile_scaling(node)
+		elif node is TouchScreenButton:
+			apply_touch_button_scaling(node)
 
 func apply_mobile_scaling(control: Control):
 	# Apply appropriate scaling based on control type
-	if control is Button or control is TouchScreenButton:
+	if control is Button:
 		# Ensure touch targets are large enough
 		var min_size = Vector2(touch_button_min_size, touch_button_min_size) * ui_scale_factor
 		control.custom_minimum_size = control.custom_minimum_size.max(min_size)
@@ -96,6 +98,11 @@ func apply_mobile_scaling(control: Control):
 	# Apply general UI scaling
 	if control.has_method("set_scale"):
 		control.scale = Vector2.ONE * ui_scale_factor
+
+func apply_touch_button_scaling(touch_button: TouchScreenButton):
+	# Apply appropriate scaling for TouchScreenButton
+	var min_size = Vector2(touch_button_min_size, touch_button_min_size) * ui_scale_factor
+	touch_button.scale = Vector2.ONE * ui_scale_factor
 
 func position_touch_controls():
 	# Position touch controls within safe area

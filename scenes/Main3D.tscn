@@ -1,18 +1,13 @@
-[gd_scene load_steps=10 format=3 uid="uid://8cqv02ga47pm"]
+[gd_scene load_steps=8 format=3 uid="uid://8cqv02ga47pm"]
 
 [ext_resource type="Script" uid="uid://dpsfbiixw3qm1" path="res://scripts/GameManager3D.gd" id="1"]
-[ext_resource type="Script" uid="uid://cccrigm6e35xi" path="res://scripts/Player3D.gd" id="2"]
+[ext_resource type="PackedScene" uid="uid://bvxc8y7qm8k2h" path="res://scenes/Player3D.tscn" id="2"]
 [ext_resource type="Script" uid="uid://b26dhbnnwvydd" path="res://scripts/MobileInputBridge.gd" id="3"]
 [ext_resource type="Script" uid="uid://bwstrgmb5yay2" path="res://scripts/MobileInputTest.gd" id="4"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_1"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_2"]
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_1"]
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_1"]
-size = Vector3(0.8, 1.8, 0.8)
 
 [sub_resource type="Environment" id="Environment_1"]
 background_mode = 1
@@ -46,19 +41,8 @@ mesh = SubResource("BoxMesh_1")
 transform = Transform3D(50, 0, 0, 0, 1, 0, 0, 0, 100, 0, -1, 0)
 shape = SubResource("BoxShape3D_2")
 
-[node name="Player" type="CharacterBody3D" parent="."]
+[node name="Player" parent="." instance=ExtResource("2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -5)
-script = ExtResource("2")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Player"]
-mesh = SubResource("CapsuleMesh_1")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
-shape = SubResource("BoxShape3D_1")
-
-[node name="Camera3D" type="Camera3D" parent="Player"]
-transform = Transform3D(1, 0, 0, 0, 0.766044, 0.642788, 0, -0.642788, 0.766044, 0, 8, 8)
-fov = 65.0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_1")

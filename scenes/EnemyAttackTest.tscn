@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3 uid="uid://bqxvn8ywqxqxq"]
+
+[ext_resource type="Script" path="res://scripts/EnemyAttackSystem.gd" id="1_1a2b3"]
+[ext_resource type="Script" path="res://scripts/enemies/BasicMeleeEnemy.gd" id="2_4c5d6"]
+[ext_resource type="Script" path="res://scripts/RPGPlayer3D.gd" id="3_7e8f9"]
+
+[node name="EnemyAttackTest" type="Node3D"]
+
+[node name="EnemyAttackSystem" type="Node" parent="."]
+script = ExtResource("1_1a2b3")
+
+[node name="TestEnemy" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5)
+script = ExtResource("2_4c5d6")
+
+[node name="Player" type="CharacterBody3D" parent="."]
+script = ExtResource("3_7e8f9")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 5, 8)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 5, 0)

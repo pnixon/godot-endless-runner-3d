@@ -60,6 +60,10 @@ var stamina_drain_rate = 40.0  # Stamina per second when using abilities
 var detection_area: Area3D
 var detection_shape: CollisionShape3D
 
+# Animation references
+var animation_player: AnimationPlayer
+var fighter_model: Node3D
+
 # Get gravity from the project settings and enhance it for ultra-crunchy jumps
 var gravity = ProjectSettings.get_setting("physics/3d/default_gravity") * 3.5  # Much higher gravity
 var jump_gravity_multiplier = 2.5  # Heavy extra gravity when falling from jump
@@ -67,6 +71,9 @@ var coyote_time = 0.1  # Brief moment to still jump after leaving ground
 
 func _ready():
 	add_to_group("player")
+	
+	# Set up animation player
+	setup_animation_player()
 	
 	# Set initial position
 	target_x = LANE_POSITIONS[current_lane]
@@ -124,6 +131,68 @@ func setup_camera():
 		camera.fov = 65.0  # Slightly tighter FOV for more focused view
 		
 		print("3D Camera configured: High overview angle for crunchy gameplay")
+
+func setup_animation_player():
+	# Find the fighter model and animation player
+	fighter_model = $FighterModel/Animation_Running_withSkin
+	if fighter_model:
+		# Rotate the fighter model 180 degrees to face away from camera
+		fighter_model.rotation_degrees.y = 180
+		
+		# Look for AnimationPlayer in the fighter model
+		animation_player = fighter_model.get_node("AnimationPlayer")
+		if animation_player:
+			# Debug: Print all available animations
+			print("Available animations:")
+			var animation_list = animation_player.get_animation_list()
+			for anim_name in animation_list:
+				print("  - ", anim_name)
+			
+			# Try to play the first available animation with looping
+			if animation_list.size() > 0:
+				var first_animation = animation_list[0]
+				animation_player.play(first_animation)
+				# Set the animation to loop
+				var animation_resource = animation_player.get_animation(first_animation)
+				if animation_resource:
+					animation_resource.loop_mode = Animation.LOOP_LINEAR
+				print("Playing looped animation: ", first_animation)
+			else:
+				print("No animations found in AnimationPlayer")
+		else:
+			print("AnimationPlayer not found in fighter model")
+	else:
+		print("Fighter model not found")
+
+func play_animation(animation_name: String):
+	if animation_player and animation_player.has_animation(animation_name):
+		animation_player.play(animation_name)
+		# Ensure the animation loops
+		var animation_resource = animation_player.get_animation(animation_name)
+		if animation_resource:
+			animation_resource.loop_mode = Animation.LOOP_LINEAR
+		print("Playing looped animation: ", animation_name)
+	else:
+		print("Animation not found: ", animation_name)
+
+func play_running_animation():
+	# Try different possible running animation names
+	var possible_names = ["Running", "run", "Run", "Animation_Running_withSkin", "Armature|Running"]
+	for name in possible_names:
+		if animation_player and animation_player.has_animation(name):
+			play_animation(name)
+			return
+	print("No running animation found")
+
+func play_jump_animation():
+	# Try different possible jump animation names
+	var possible_names = ["Jump", "jump", "Regular_Jump", "Animation_Regular_Jump_withSkin", "Armature|Jump"]
+	for name in possible_names:
+		if animation_player and animation_player.has_animation(name):
+			play_animation(name)
+			return
+	# If no jump animation found, keep running
+	play_running_animation()
 
 func _input(event):
 	# Press H to debug health bar
@@ -305,6 +374,7 @@ func _physics_process(delta):
 		current_stamina -= 20
 		print("Jumping! Stamina: ", current_stamina)
 		create_movement_effect("jump")
+		play_jump_animation()
 	
 	# Handle slide (Shift key - avoid overhead hazards) - No cooldown for actions
 	if Input.is_action_just_pressed("slide") and not is_sliding and current_stamina >= 15:
@@ -320,6 +390,7 @@ func _physics_process(delta):
 		if jump_timer <= 0 or is_on_floor():
 			is_jumping = false
 			print("Jump ended")
+			play_running_animation()
 	
 	if is_sliding:
 		slide_timer -= delta
