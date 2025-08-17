@@ -1,24 +1,22 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=10 format=3 uid="uid://8cqv02ga47pm"]
 
-[ext_resource type="Script" path="res://GameManager3D.gd" id="1"]
-[ext_resource type="Script" path="res://Player3D.gd" id="2"]
+[ext_resource type="Script" uid="uid://dpsfbiixw3qm1" path="res://scripts/GameManager3D.gd" id="1"]
+[ext_resource type="Script" uid="uid://cccrigm6e35xi" path="res://scripts/Player3D.gd" id="2"]
+[ext_resource type="Script" uid="uid://b26dhbnnwvydd" path="res://scripts/MobileInputBridge.gd" id="3"]
+[ext_resource type="Script" uid="uid://bwstrgmb5yay2" path="res://scripts/MobileInputTest.gd" id="4"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_1"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_2"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_1"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_1"]
 size = Vector3(0.8, 1.8, 0.8)
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_1"]
-radius = 0.5
-height = 2.0
-
-[sub_resource type="BoxMesh" id="BoxMesh_1"]
-size = Vector3(1, 1, 1)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_2"]
-size = Vector3(1, 1, 1)
-
 [sub_resource type="Environment" id="Environment_1"]
 background_mode = 1
-background_color = Color(0.5, 0.7, 1.0, 1)
+background_color = Color(0.5, 0.7, 1, 1)
 ambient_light_source = 2
 ambient_light_color = Color(1, 1, 1, 1)
 ambient_light_energy = 0.3
@@ -26,11 +24,16 @@ ambient_light_energy = 0.3
 [node name="Main3D" type="Node3D"]
 script = ExtResource("1")
 
+[node name="MobileInputBridge" type="Node" parent="."]
+script = ExtResource("3")
+
+[node name="MobileInputTest" type="Node" parent="."]
+script = ExtResource("4")
+
 [node name="Environment" type="Node3D" parent="."]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="Environment"]
 transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 10, 0)
-light_energy = 1.0
 shadow_enabled = true
 
 [node name="Ground" type="StaticBody3D" parent="Environment"]
@@ -105,17 +108,19 @@ text = "XP: 0"
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -280.0
+offset_left = -320.0
 offset_top = 20.0
 offset_right = -20.0
-offset_bottom = 140.0
-text = "A/D or ←→: Switch lanes
+offset_bottom = 160.0
+text = "KEYBOARD: A/D or ←→: Switch lanes
 W/S or ↑/↓: Move forward/backward
 Space: Jump | Shift: Slide
 
-Perfect dodges build streak multiplier!
+MOBILE: Swipe left/right: Switch lanes
+Swipe up: Jump | Swipe down: Slide
+Tap: Attack | Long press: Special
 
-M: Toggle music | +/-: Volume"
+Perfect dodges build streak multiplier!"
 horizontal_alignment = 2
 
 [node name="GameOverLabel" type="Label" parent="UI"]
@@ -141,5 +146,5 @@ offset_left = -150.0
 offset_top = 20.0
 offset_right = 150.0
 offset_bottom = 50.0
-text = "Press A or D to restart"
+text = "Swipe left/right or press A/D to restart"
 horizontal_alignment = 1
