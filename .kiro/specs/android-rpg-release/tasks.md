@@ -53,21 +53,23 @@
     - Integrate perfect dodge timing windows with bonus rewards and invincibility frames
     - _Requirements: 7.1, 7.2, 7.3_
 
-  - [ ] 4.2 Add enemy attack patterns and telegraphing system
+  - [x] 4.2 Add enemy attack patterns and telegraphing system
     - Implement EnemyAttackSystem with telegraphed attacks that require specific dodge directions
     - Create attack pattern database with visual and audio cues for incoming attacks
     - Add enemy types with different attack patterns: frontal attacks, side swipes, area attacks
     - Implement boss attack patterns with multi-phase telegraphing and combo sequences
     - _Requirements: 7.1, 7.3, 7.4_
 
-  - [ ] 4.3 Build combat feedback and timing systems
+  - [x] 4.3 Build combat feedback and timing systems
     - Create visual feedback system for successful dodges, blocks, and perfect timing
     - Implement screen effects for critical moments: slow-motion on perfect dodges, screen shake on blocks
     - Add audio feedback with distinct sounds for different combat actions and outcomes
     - Create combo system that rewards consecutive successful dodges and attacks
     - _Requirements: 7.1, 8.4_
 
-  - [ ] 4.4 Integrate mobile touch controls for combat actions
+  - [x] 4.4 Integrate mobile touch controls for combat actions
+    - No more grid, jumping back can dodge but the character moves forward and the enemy moves in as well.
+    - no more jumping, swiping up dashes ahead, and swiping back dodges back
     - Map swipe gestures to dodge directions: swipe left/right for side dodges, swipe down for back dodge
     - Implement hold-to-block with touch and hold gesture recognition
     - Add haptic feedback for combat actions: light vibration for dodges, strong for successful blocks

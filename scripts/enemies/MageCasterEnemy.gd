@@ -62,6 +62,11 @@ func choose_attack_pattern(available_patterns: Array[String]) -> String:
 	var health_percentage = current_health / max_health
 	var mana_percentage = mana / max_mana
 	
+	# Update spell costs for new spells
+	spell_costs["mage_ice_shard_barrage"] = 40.0
+	spell_costs["mage_meteor_strike"] = 60.0
+	spell_costs["mage_arcane_missile_combo"] = 45.0
+	
 	# Check mana costs and availability
 	var affordable_patterns: Array[String] = []
 	for pattern in available_patterns:
@@ -72,24 +77,44 @@ func choose_attack_pattern(available_patterns: Array[String]) -> String:
 		# No mana for spells - retreat and regenerate
 		return ""
 	
-	# When player is far and mage has high mana, use lightning storm
+	# When player is very far and mage has high mana, use meteor strike
+	if distance > 9.0 and mana_percentage > 0.7:
+		if "mage_meteor_strike" in affordable_patterns:
+			return "mage_meteor_strike"
+	
+	# When player is far and mage has high mana, use lightning storm or ice barrage
 	if distance > 7.0 and mana_percentage > 0.6:
-		if "mage_lightning_storm" in affordable_patterns:
+		if "mage_lightning_storm" in affordable_patterns and last_attack_pattern != "mage_lightning_storm":
 			return "mage_lightning_storm"
+		elif "mage_ice_shard_barrage" in affordable_patterns:
+			return "mage_ice_shard_barrage"
 	
-	# When player is at medium range, use fireball
+	# When player is at medium range, use varied attacks
 	if distance > 4.0 and distance <= 8.0:
-		if "mage_fireball" in affordable_patterns:
+		if mana_percentage > 0.6 and "mage_arcane_missile_combo" in affordable_patterns:
+			return "mage_arcane_missile_combo"
+		elif "mage_fireball" in affordable_patterns and last_attack_pattern != "mage_fireball":
 			return "mage_fireball"
+		elif "mage_ice_shard_barrage" in affordable_patterns:
+			return "mage_ice_shard_barrage"
 	
-	# When player is close or mage is low on health, use area attacks to create space
+	# When player is close or mage is low on health, use defensive spells
 	if distance <= 4.0 or health_percentage < 0.4:
 		if "mage_lightning_storm" in affordable_patterns:
 			return "mage_lightning_storm"
+		elif "mage_ice_shard_barrage" in affordable_patterns:
+			return "mage_ice_shard_barrage"
 	
-	# Default to fireball if available
-	if "mage_fireball" in affordable_patterns:
-		return "mage_fireball"
+	# When low on mana, use efficient spells
+	if mana_percentage < 0.4:
+		if "mage_fireball" in affordable_patterns:
+			return "mage_fireball"
+	
+	# Default selection with variety
+	var preferred_patterns = ["mage_fireball", "mage_ice_shard_barrage", "mage_arcane_missile_combo"]
+	for pattern in preferred_patterns:
+		if pattern in affordable_patterns and pattern != last_attack_pattern:
+			return pattern
 	
 	return affordable_patterns[0] if affordable_patterns.size() > 0 else ""
 

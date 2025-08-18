@@ -1,8 +1,8 @@
-# Enemy Attack System Documentation
+# Enhanced Enemy Attack System Documentation
 
 ## Overview
 
-The Enemy Attack System provides telegraphed attacks that require specific dodge directions, creating engaging tactical combat encounters. The system includes multiple enemy types with distinct attack patterns, visual and audio cues, and boss encounters with multi-phase telegraphing.
+The Enhanced Enemy Attack System provides sophisticated telegraphed attacks that require specific dodge directions, creating engaging tactical combat encounters. The system includes multiple enemy types with distinct attack patterns, enhanced visual and audio cues, multi-phase boss encounters, and combo attack sequences that provide deep tactical gameplay.
 
 ## Core Components
 
@@ -33,26 +33,32 @@ The Enemy Attack System provides telegraphed attacks that require specific dodge
 - **Dodge Requirements**: Side dodges for arrows, backward for volleys
 
 #### HeavyBruiserEnemy
-- **Attack Patterns**: Overhead slams, ground pound area attacks
-- **Behavior**: Slow but powerful, hard to interrupt
-- **Dodge Requirements**: Side dodges for slams, backward for area attacks
+- **Attack Patterns**: Overhead slams, ground pound area attacks, bull rush charges, slam-pound combos
+- **Behavior**: Slow but powerful, hard to interrupt, becomes more aggressive when damaged
+- **Dodge Requirements**: Side dodges for slams, backward for area attacks, side dodges for charges
+- **Special**: Combo attacks require multiple sequential dodges
 
 #### AgileRogueEnemy
-- **Attack Patterns**: Quick dash attacks, multi-hit combos
-- **Behavior**: Fast movement, hit-and-run tactics
-- **Dodge Requirements**: Various directions based on attack sequence
+- **Attack Patterns**: Quick dash attacks (left/right), multi-hit combos, spinning blade area attacks, shadow strike sequences
+- **Behavior**: Fast movement, hit-and-run tactics, dash abilities for mobility
+- **Dodge Requirements**: Various directions based on attack sequence, rapid dodge sequences for combos
+- **Special**: Shadow strike combos teleport between attack positions
 
 #### MageCasterEnemy
-- **Attack Patterns**: Fireball spells, lightning storm area attacks
-- **Behavior**: Long-range casting, retreats when threatened
-- **Dodge Requirements**: Side dodges for fireballs, backward for storms
-- **Special**: Mana system affects attack availability
+- **Attack Patterns**: Fireball spells, lightning storm area attacks, ice shard barrages, meteor strikes, arcane missile combos
+- **Behavior**: Long-range casting, retreats when threatened, mana management affects spell selection
+- **Dodge Requirements**: Side dodges for fireballs, backward for storms, varied patterns for barrages
+- **Special**: Mana system affects attack availability, casting times vary by spell complexity, meteor strikes have extended telegraph times
 
 #### BossEnemy
-- **Attack Patterns**: Multi-phase complex sequences
-- **Behavior**: Phase transitions, enrage mode, special attacks
-- **Dodge Requirements**: Complex sequences requiring multiple dodges
-- **Special**: Health-based phase transitions, damage reduction during transitions
+- **Attack Patterns**: Multi-phase complex sequences, tier-specific patterns, enrage patterns, desperation attacks
+- **Behavior**: Phase transitions, enrage mode, special attacks, adaptive pattern selection
+- **Dodge Requirements**: Complex sequences requiring multiple dodges, extended combo chains
+- **Special**: Health-based phase transitions, damage reduction during transitions, tier-specific escalation, desperation mode at low health
+- **Enhanced Features**: 
+  - Tier 1: 3-phase basic boss patterns with alternates
+  - Tier 2: 5-attack complex sequences with enrage variants
+  - Final Boss: 6-attack ultimate sequences with desperation patterns
 
 ## Attack Types
 
@@ -164,3 +170,107 @@ Phase 3: Area Slam (2.5s) -> Dodge Left
 - Combo system rewarding consecutive perfect dodges
 - Dynamic difficulty adjustment based on player performance
 - Multiplayer support for cooperative dodge mechanics
+### Com
+bo Attacks
+- **Visual Cue**: Magenta rectangular telegraph
+- **Audio Cue**: "combo_windup"
+- **Required Dodge**: Multiple sequential dodges
+- **Examples**: Multi-hit sequences, boss combos
+
+### Boss Special Attacks
+- **Visual Cue**: Large dark red circular telegraph with rim lighting
+- **Audio Cue**: "boss_special_windup"
+- **Required Dodge**: Varies by specific attack
+- **Examples**: Ultimate abilities, phase transition attacks
+- **Special**: Enhanced visual effects with warning particles
+
+## Enhanced Attack Features
+
+### Multi-Phase Attack Patterns
+- **Boss Tier 1**: 3-4 attack sequences with 2-4 second intervals
+- **Boss Tier 2**: 5-attack complex patterns with varied timing
+- **Final Boss**: 6-attack ultimate sequences with 17+ second duration
+- **Combo Attacks**: Sequential attacks requiring different dodge directions
+
+### Enhanced Visual Telegraphing
+- **Attack-Specific Effects**: Different mesh shapes and colors for each attack type
+- **Warning Particles**: Dangerous attacks (40+ damage) show particle warnings
+- **Scaling Effects**: Boss and area attacks scale up during telegraph
+- **Intensity Ramping**: Telegraph effects intensify as attack approaches
+- **Directional Indicators**: Side attacks show rotated telegraph meshes
+
+### Improved Audio System
+- **Contextual Audio**: Different audio cues based on attack importance
+- **Boss Audio**: Special high-intensity audio for boss attacks
+- **Magic Audio**: Distinct magical energy sounds for spell attacks
+- **Impact Audio**: Ground impact warnings for area attacks
+
+### Adaptive Enemy Behavior
+- **Pattern Variety**: Each enemy type has 4-5 different attack patterns
+- **Health-Based Selection**: Attack patterns change based on enemy health
+- **Distance Awareness**: Enemies choose attacks based on player distance
+- **Combo Avoidance**: Enemies avoid repeating the same pattern consecutively
+
+## Enhanced Attack Pattern Examples
+
+### Heavy Bruiser Slam-Pound Combo
+```
+1. Overhead Slam (2.2s telegraph) -> Dodge Right
+2. Ground Pound (2.5s telegraph) -> Dodge Backward
+Total Duration: 6.0 seconds
+```
+
+### Rogue Shadow Strike Combo
+```
+1. Shadow Strike Left (1.2s telegraph) -> Dodge Right
+2. Shadow Strike Right (1.0s telegraph) -> Dodge Left  
+3. Shadow Strike Overhead (1.5s telegraph) -> Dodge Backward
+Total Duration: 4.5 seconds
+```
+
+### Mage Ice Shard Barrage
+```
+1. Ice Shard Left (2.0s telegraph) -> Dodge Right
+2. Ice Shard Center (2.0s telegraph) -> Dodge Backward
+3. Ice Shard Right (2.0s telegraph) -> Dodge Left
+Total Duration: 4.4 seconds (overlapping)
+```
+
+### Final Boss Ultimate Sequence
+```
+Phase 1: Charge Attack (3.0s) -> Dodge Backward
+Phase 2: Left Sweep (2.0s) -> Dodge Right
+Phase 3: Right Sweep (2.0s) -> Dodge Left
+Phase 4: Area Devastation (4.0s) -> Dodge Backward
+Phase 5: Overhead Slam (2.5s) -> Dodge Left
+Phase 6: Ultimate Attack (5.0s) -> Dodge Right
+Total Duration: 20.5 seconds
+```
+
+## Performance Enhancements
+
+- **Optimized Telegraph Effects**: Efficient mesh instances with material animations
+- **Pattern Caching**: Pre-defined attack patterns to avoid runtime allocation
+- **Visual Effect Pooling**: Reusable particle and telegraph effects
+- **Smart Audio Management**: Context-aware audio cue selection
+- **Adaptive Quality**: Telegraph complexity scales with device performance
+
+## Integration Improvements
+
+### Enhanced Combat Controller Integration
+- **Multi-Attack Tracking**: Handles multiple simultaneous telegraphed attacks
+- **Perfect Dodge Windows**: Precise timing windows for each attack type
+- **Combo Dodge Chains**: Support for sequential dodge requirements
+
+### Advanced Enemy AI Integration
+- **Contextual Pattern Selection**: Enemies choose patterns based on tactical situation
+- **Health-Based Adaptation**: Attack patterns evolve as enemy health decreases
+- **Player Behavior Learning**: Enemies adapt to player dodge patterns over time
+
+## Future Enhancement Opportunities
+
+- **Environmental Hazards**: Telegraph system extended to environmental dangers
+- **Cooperative Dodge Mechanics**: Multi-player coordinated dodge requirements
+- **Dynamic Difficulty**: Telegraph timing adjusts based on player performance
+- **Accessibility Options**: Visual and audio accessibility improvements
+- **Advanced Boss Mechanics**: Phase-specific vulnerability windows and counter-attacks

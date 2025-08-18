@@ -358,6 +358,18 @@ func _input(event):
 			KEY_SPACE:
 				if event.pressed:
 					test_combat_block()
+			KEY_P:
+				test_perfect_dodge()
+			KEY_O:
+				test_perfect_block()
+			KEY_I:
+				test_combo_system()
+			KEY_U:
+				debug_feedback_system()
+			KEY_J:
+				test_mobile_combat_controls()
+			KEY_SEMICOLON:
+				toggle_touch_zones()
 
 func _physics_process(delta):
 	"""Main physics update loop"""
@@ -1115,6 +1127,41 @@ func test_combat_block():
 		await get_tree().create_timer(1.0).timeout
 		combat_controller.end_block(true)
 
+func test_perfect_dodge():
+	"""Test perfect dodge for feedback system"""
+	if combat_controller:
+		print("Testing perfect dodge...")
+		combat_controller.test_incoming_attack("frontal")
+		# Wait a moment then dodge
+		get_tree().create_timer(0.8).timeout.connect(func(): 
+			combat_controller.attempt_dodge(CombatController.DodgeDirection.BACKWARD)
+		)
+
+func test_perfect_block():
+	"""Test perfect block for feedback system"""
+	if combat_controller:
+		print("Testing perfect block...")
+		combat_controller.test_incoming_attack("frontal")
+		# Start blocking immediately for perfect timing
+		combat_controller.start_block()
+
+func test_combo_system():
+	"""Test combo system by performing multiple actions"""
+	if combat_controller:
+		print("Testing combo system...")
+		# Perform a series of dodges to build combo
+		for i in range(5):
+			get_tree().create_timer(i * 0.5).timeout.connect(func(): 
+				combat_controller.attempt_dodge(CombatController.DodgeDirection.LEFT if i % 2 == 0 else CombatController.DodgeDirection.RIGHT)
+			)
+
+func debug_feedback_system():
+	"""Debug the combat feedback system"""
+	if combat_controller and combat_controller.feedback_system:
+		combat_controller.feedback_system.debug_feedback_system()
+	else:
+		print("Combat feedback system not available")
+
 func is_invincible() -> bool:
 	"""Check if player is currently invincible"""
 	if combat_controller:
@@ -1142,3 +1189,75 @@ func register_incoming_attack(attack_id: String, telegraph_time: float, damage: 
 			dodge_dir = CombatController.DodgeDirection.BACKWARD
 	
 	combat_controller.register_incoming_attack(attack_id, telegraph_time, damage, attack_type, dodge_dir)
+
+# Mobile Combat Testing Functions
+
+func test_mobile_combat_controls():
+	"""Test mobile combat control integration"""
+	print("=== MOBILE COMBAT CONTROLS TEST ===")
+	
+	var mobile_input = get_node("/root/MobileInputManager")
+	if mobile_input:
+		print("✅ MobileInputManager found")
+		print("Combat mode enabled: ", mobile_input.is_combat_mode_enabled())
+		
+		# Test enabling combat mode
+		mobile_input.set_combat_mode(true)
+		print("✅ Combat mode enabled for testing")
+		
+		# Test gesture thresholds
+		print("Dodge swipe threshold: ", mobile_input.dodge_swipe_threshold)
+		print("Dash swipe threshold: ", mobile_input.dash_swipe_threshold)
+		print("Block hold threshold: ", mobile_input.block_hold_threshold)
+	else:
+		print("❌ MobileInputManager not found")
+	
+	if combat_controller:
+		print("✅ CombatController found")
+		combat_controller.debug_combat_state()
+	else:
+		print("❌ CombatController not found")
+	
+	print("===================================")
+
+func toggle_touch_zones():
+	"""Toggle touch zone visibility"""
+	var ui_layer = get_tree().current_scene.get_node_or_null("UI")
+	if ui_layer:
+		var touch_zones = ui_layer.get_node_or_null("TouchZoneIndicator")
+		if touch_zones:
+			var current_visible = touch_zones.show_zones
+			touch_zones.set_zones_visible(not current_visible)
+			print("Touch zones ", "hidden" if current_visible else "shown")
+		else:
+			print("Touch zone indicators not found")
+	else:
+		print("UI layer not found")
+
+func simulate_mobile_gesture(gesture_type: String):
+	"""Simulate a mobile gesture for testing"""
+	var mobile_input = get_node("/root/MobileInputManager")
+	if not mobile_input:
+		print("MobileInputManager not found for gesture simulation")
+		return
+	
+	var screen_center = get_viewport().get_visible_rect().size / 2
+	
+	match gesture_type:
+		"dodge_left":
+			mobile_input.emit_signal("dodge_gesture", "left")
+		"dodge_right":
+			mobile_input.emit_signal("dodge_gesture", "right")
+		"dodge_back":
+			mobile_input.emit_signal("dodge_gesture", "backward")
+		"dash_forward":
+			mobile_input.emit_signal("dash_gesture")
+		"block_start":
+			mobile_input.emit_signal("block_gesture_started")
+		"block_end":
+			mobile_input.emit_signal("block_gesture_ended")
+		_:
+			print("Unknown gesture type: ", gesture_type)
+			return
+	
+	print("Simulated mobile gesture: ", gesture_type)

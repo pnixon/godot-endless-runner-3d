@@ -219,23 +219,67 @@ func create_heavy_bruiser_patterns():
 	ground_pound.attack_area = Vector3(5.0, 2.0, 5.0)  # Large area
 	var area_pattern = AttackPattern.new("bruiser_ground_pound", [ground_pound], [0.0])
 	attack_patterns["bruiser_ground_pound"] = area_pattern
+	
+	# Charging bull rush attack
+	var bull_rush = AttackData.new("bull_rush", 2.8, 45.0, AttackType.FRONTAL, CombatController.DodgeDirection.LEFT)
+	bull_rush.visual_cue = "charge_telegraph"
+	bull_rush.audio_cue = "bull_rush_windup"
+	bull_rush.attack_area = Vector3(2.0, 2.0, 6.0)  # Long frontal attack
+	var rush_pattern = AttackPattern.new("bruiser_bull_rush", [bull_rush], [0.0])
+	attack_patterns["bruiser_bull_rush"] = rush_pattern
+	
+	# Combo: Slam followed by ground pound
+	var combo_slam = AttackData.new("combo_slam", 2.2, 30.0, AttackType.OVERHEAD, CombatController.DodgeDirection.RIGHT)
+	var combo_pound = AttackData.new("combo_pound", 2.5, 35.0, AttackType.AREA, CombatController.DodgeDirection.BACKWARD)
+	combo_slam.visual_cue = "combo_slam_telegraph"
+	combo_pound.visual_cue = "combo_pound_telegraph"
+	var combo_pattern = AttackPattern.new("bruiser_slam_pound_combo", [combo_slam, combo_pound], [0.0, 3.5])
+	attack_patterns["bruiser_slam_pound_combo"] = combo_pattern
 
 func create_agile_rogue_patterns():
 	"""Create attack patterns for agile rogue enemies"""
 	
-	# Quick side dash attack
+	# Quick side dash attack (left)
 	var dash_left = AttackData.new("dash_left", 0.8, 22.0, AttackType.SIDE_LEFT, CombatController.DodgeDirection.RIGHT)
 	dash_left.visual_cue = "dash_telegraph"
 	dash_left.audio_cue = "dash_windup"
-	var pattern = AttackPattern.new("rogue_dash_left", [dash_left], [0.0])
-	attack_patterns["rogue_dash_left"] = pattern
+	var pattern_left = AttackPattern.new("rogue_dash_left", [dash_left], [0.0])
+	attack_patterns["rogue_dash_left"] = pattern_left
+	
+	# Quick side dash attack (right)
+	var dash_right = AttackData.new("dash_right", 0.8, 22.0, AttackType.SIDE_RIGHT, CombatController.DodgeDirection.LEFT)
+	dash_right.visual_cue = "dash_telegraph"
+	dash_right.audio_cue = "dash_windup"
+	var pattern_right = AttackPattern.new("rogue_dash_right", [dash_right], [0.0])
+	attack_patterns["rogue_dash_right"] = pattern_right
 	
 	# Multi-hit combo sequence
 	var combo1 = AttackData.new("rogue_combo_1", 1.0, 12.0, AttackType.SIDE_LEFT, CombatController.DodgeDirection.RIGHT)
 	var combo2 = AttackData.new("rogue_combo_2", 0.8, 12.0, AttackType.SIDE_RIGHT, CombatController.DodgeDirection.LEFT)
 	var combo3 = AttackData.new("rogue_combo_3", 1.2, 15.0, AttackType.FRONTAL, CombatController.DodgeDirection.BACKWARD)
+	combo1.visual_cue = "rogue_combo1_telegraph"
+	combo2.visual_cue = "rogue_combo2_telegraph"
+	combo3.visual_cue = "rogue_combo3_telegraph"
 	var combo_pattern = AttackPattern.new("rogue_triple_combo", [combo1, combo2, combo3], [0.0, 1.2, 2.5])
 	attack_patterns["rogue_triple_combo"] = combo_pattern
+	
+	# Spinning blade attack (area)
+	var spin_attack = AttackData.new("spinning_blades", 1.5, 28.0, AttackType.AREA, CombatController.DodgeDirection.BACKWARD)
+	spin_attack.visual_cue = "spin_attack_telegraph"
+	spin_attack.audio_cue = "blade_spin_windup"
+	spin_attack.attack_area = Vector3(3.0, 2.0, 3.0)
+	var spin_pattern = AttackPattern.new("rogue_spinning_blades", [spin_attack], [0.0])
+	attack_patterns["rogue_spinning_blades"] = spin_pattern
+	
+	# Shadow strike combo (teleport attack)
+	var shadow1 = AttackData.new("shadow_strike1", 1.2, 18.0, AttackType.SIDE_LEFT, CombatController.DodgeDirection.RIGHT)
+	var shadow2 = AttackData.new("shadow_strike2", 1.0, 18.0, AttackType.SIDE_RIGHT, CombatController.DodgeDirection.LEFT)
+	var shadow3 = AttackData.new("shadow_strike3", 1.5, 25.0, AttackType.OVERHEAD, CombatController.DodgeDirection.BACKWARD)
+	shadow1.visual_cue = "shadow_strike_left"
+	shadow2.visual_cue = "shadow_strike_right"
+	shadow3.visual_cue = "shadow_strike_overhead"
+	var shadow_pattern = AttackPattern.new("rogue_shadow_strike_combo", [shadow1, shadow2, shadow3], [0.0, 1.5, 3.0])
+	attack_patterns["rogue_shadow_strike_combo"] = shadow_pattern
 
 func create_mage_caster_patterns():
 	"""Create attack patterns for mage caster enemies"""
@@ -254,44 +298,135 @@ func create_mage_caster_patterns():
 	lightning.attack_area = Vector3(4.0, 3.0, 4.0)
 	var storm_pattern = AttackPattern.new("mage_lightning_storm", [lightning], [0.0])
 	attack_patterns["mage_lightning_storm"] = storm_pattern
+	
+	# Ice shard barrage
+	var ice1 = AttackData.new("ice_shard1", 2.0, 18.0, AttackType.SIDE_LEFT, CombatController.DodgeDirection.RIGHT)
+	var ice2 = AttackData.new("ice_shard2", 2.0, 18.0, AttackType.FRONTAL, CombatController.DodgeDirection.BACKWARD)
+	var ice3 = AttackData.new("ice_shard3", 2.0, 18.0, AttackType.SIDE_RIGHT, CombatController.DodgeDirection.LEFT)
+	ice1.visual_cue = "ice_shard_left"
+	ice2.visual_cue = "ice_shard_center"
+	ice3.visual_cue = "ice_shard_right"
+	ice1.audio_cue = "ice_formation"
+	ice2.audio_cue = "ice_formation"
+	ice3.audio_cue = "ice_formation"
+	var ice_pattern = AttackPattern.new("mage_ice_shard_barrage", [ice1, ice2, ice3], [0.0, 0.8, 1.6])
+	attack_patterns["mage_ice_shard_barrage"] = ice_pattern
+	
+	# Meteor strike (delayed area attack)
+	var meteor = AttackData.new("meteor_strike", 4.0, 50.0, AttackType.AREA, CombatController.DodgeDirection.LEFT)
+	meteor.visual_cue = "meteor_telegraph"
+	meteor.audio_cue = "meteor_incoming"
+	meteor.attack_area = Vector3(3.5, 4.0, 3.5)
+	var meteor_pattern = AttackPattern.new("mage_meteor_strike", [meteor], [0.0])
+	attack_patterns["mage_meteor_strike"] = meteor_pattern
+	
+	# Arcane missile combo
+	var missile1 = AttackData.new("arcane_missile1", 1.8, 20.0, AttackType.FRONTAL, CombatController.DodgeDirection.LEFT)
+	var missile2 = AttackData.new("arcane_missile2", 1.6, 20.0, AttackType.FRONTAL, CombatController.DodgeDirection.RIGHT)
+	var missile3 = AttackData.new("arcane_missile3", 2.0, 25.0, AttackType.FRONTAL, CombatController.DodgeDirection.BACKWARD)
+	missile1.visual_cue = "arcane_missile_telegraph"
+	missile2.visual_cue = "arcane_missile_telegraph"
+	missile3.visual_cue = "arcane_missile_telegraph"
+	var missile_pattern = AttackPattern.new("mage_arcane_missile_combo", [missile1, missile2, missile3], [0.0, 2.2, 4.0])
+	attack_patterns["mage_arcane_missile_combo"] = missile_pattern
 
 func create_boss_patterns():
 	"""Create complex attack patterns for boss enemies"""
 	
-	# Boss Tier 1: Three-phase attack
-	var phase1 = AttackData.new("boss_phase1", 2.0, 30.0, AttackType.FRONTAL, CombatController.DodgeDirection.BACKWARD)
-	var phase2 = AttackData.new("boss_phase2", 1.5, 25.0, AttackType.SIDE_LEFT, CombatController.DodgeDirection.RIGHT)
-	var phase3 = AttackData.new("boss_phase3", 2.5, 35.0, AttackType.AREA, CombatController.DodgeDirection.LEFT)
+	# Boss Tier 1: Three-phase attack with enhanced telegraphing
+	var phase1 = AttackData.new("boss_phase1", 2.5, 30.0, AttackType.FRONTAL, CombatController.DodgeDirection.BACKWARD)
+	var phase2 = AttackData.new("boss_phase2", 2.0, 25.0, AttackType.SIDE_LEFT, CombatController.DodgeDirection.RIGHT)
+	var phase3 = AttackData.new("boss_phase3", 3.0, 35.0, AttackType.AREA, CombatController.DodgeDirection.LEFT)
 	
 	phase1.visual_cue = "boss_charge_telegraph"
+	phase1.audio_cue = "boss_roar_windup"
 	phase2.visual_cue = "boss_sweep_telegraph"
+	phase2.audio_cue = "boss_weapon_swing"
 	phase3.visual_cue = "boss_area_telegraph"
+	phase3.audio_cue = "boss_ground_slam_windup"
 	
-	var boss_pattern = AttackPattern.new("boss_tier1_combo", [phase1, phase2, phase3], [0.0, 3.0, 6.0])
+	var boss_pattern = AttackPattern.new("boss_tier1_combo", [phase1, phase2, phase3], [0.0, 4.0, 8.0])
 	attack_patterns["boss_tier1_combo"] = boss_pattern
 	
-	# Boss Tier 2: Complex multi-phase sequence
-	var multi1 = AttackData.new("boss_multi1", 1.8, 20.0, AttackType.SIDE_LEFT, CombatController.DodgeDirection.RIGHT)
-	var multi2 = AttackData.new("boss_multi2", 1.8, 20.0, AttackType.SIDE_RIGHT, CombatController.DodgeDirection.LEFT)
-	var multi3 = AttackData.new("boss_multi3", 2.2, 40.0, AttackType.OVERHEAD, CombatController.DodgeDirection.BACKWARD)
-	var multi4 = AttackData.new("boss_multi4", 3.0, 50.0, AttackType.AREA, CombatController.DodgeDirection.LEFT)
+	# Boss Tier 1: Alternative pattern for variety
+	var alt1 = AttackData.new("boss_alt1", 2.0, 28.0, AttackType.OVERHEAD, CombatController.DodgeDirection.LEFT)
+	var alt2 = AttackData.new("boss_alt2", 1.8, 22.0, AttackType.SIDE_RIGHT, CombatController.DodgeDirection.LEFT)
+	var alt3 = AttackData.new("boss_alt3", 2.5, 32.0, AttackType.FRONTAL, CombatController.DodgeDirection.BACKWARD)
 	
-	var complex_pattern = AttackPattern.new("boss_tier2_complex", [multi1, multi2, multi3, multi4], [0.0, 2.0, 4.5, 7.0])
+	alt1.visual_cue = "boss_overhead_telegraph"
+	alt2.visual_cue = "boss_side_telegraph"
+	alt3.visual_cue = "boss_charge_telegraph"
+	
+	var boss_alt_pattern = AttackPattern.new("boss_tier1_alternate", [alt1, alt2, alt3], [0.0, 3.0, 6.0])
+	attack_patterns["boss_tier1_alternate"] = boss_alt_pattern
+	
+	# Boss Tier 2: Complex multi-phase sequence with enhanced timing
+	var multi1 = AttackData.new("boss_multi1", 2.0, 20.0, AttackType.SIDE_LEFT, CombatController.DodgeDirection.RIGHT)
+	var multi2 = AttackData.new("boss_multi2", 2.0, 20.0, AttackType.SIDE_RIGHT, CombatController.DodgeDirection.LEFT)
+	var multi3 = AttackData.new("boss_multi3", 2.5, 40.0, AttackType.OVERHEAD, CombatController.DodgeDirection.BACKWARD)
+	var multi4 = AttackData.new("boss_multi4", 3.5, 50.0, AttackType.AREA, CombatController.DodgeDirection.LEFT)
+	var multi5 = AttackData.new("boss_multi5", 1.8, 35.0, AttackType.COMBO_SEQUENCE, CombatController.DodgeDirection.RIGHT)
+	
+	multi1.visual_cue = "boss_tier2_left_sweep"
+	multi2.visual_cue = "boss_tier2_right_sweep"
+	multi3.visual_cue = "boss_tier2_overhead_slam"
+	multi4.visual_cue = "boss_tier2_area_devastation"
+	multi5.visual_cue = "boss_tier2_combo_finisher"
+	
+	var complex_pattern = AttackPattern.new("boss_tier2_complex", [multi1, multi2, multi3, multi4, multi5], [0.0, 2.5, 5.0, 8.0, 11.0])
 	attack_patterns["boss_tier2_complex"] = complex_pattern
 	
-	# Final Boss: Ultimate combo sequence
-	var ultimate1 = AttackData.new("final_ultimate1", 2.5, 35.0, AttackType.FRONTAL, CombatController.DodgeDirection.BACKWARD)
-	var ultimate2 = AttackData.new("final_ultimate2", 1.5, 25.0, AttackType.SIDE_LEFT, CombatController.DodgeDirection.RIGHT)
-	var ultimate3 = AttackData.new("final_ultimate3", 1.5, 25.0, AttackType.SIDE_RIGHT, CombatController.DodgeDirection.LEFT)
-	var ultimate4 = AttackData.new("final_ultimate4", 3.5, 60.0, AttackType.AREA, CombatController.DodgeDirection.BACKWARD)
+	# Boss Tier 2: Enrage pattern (faster, more aggressive)
+	var enrage1 = AttackData.new("boss_enrage1", 1.5, 25.0, AttackType.FRONTAL, CombatController.DodgeDirection.BACKWARD)
+	var enrage2 = AttackData.new("boss_enrage2", 1.2, 22.0, AttackType.SIDE_LEFT, CombatController.DodgeDirection.RIGHT)
+	var enrage3 = AttackData.new("boss_enrage3", 1.2, 22.0, AttackType.SIDE_RIGHT, CombatController.DodgeDirection.LEFT)
+	var enrage4 = AttackData.new("boss_enrage4", 2.0, 45.0, AttackType.AREA, CombatController.DodgeDirection.BACKWARD)
+	
+	enrage1.visual_cue = "boss_enrage_charge"
+	enrage2.visual_cue = "boss_enrage_left"
+	enrage3.visual_cue = "boss_enrage_right"
+	enrage4.visual_cue = "boss_enrage_devastation"
+	
+	var enrage_pattern = AttackPattern.new("boss_tier2_enrage", [enrage1, enrage2, enrage3, enrage4], [0.0, 1.8, 3.2, 5.0])
+	attack_patterns["boss_tier2_enrage"] = enrage_pattern
+	
+	# Final Boss: Ultimate combo sequence with multiple phases
+	var ultimate1 = AttackData.new("final_ultimate1", 3.0, 35.0, AttackType.FRONTAL, CombatController.DodgeDirection.BACKWARD)
+	var ultimate2 = AttackData.new("final_ultimate2", 2.0, 25.0, AttackType.SIDE_LEFT, CombatController.DodgeDirection.RIGHT)
+	var ultimate3 = AttackData.new("final_ultimate3", 2.0, 25.0, AttackType.SIDE_RIGHT, CombatController.DodgeDirection.LEFT)
+	var ultimate4 = AttackData.new("final_ultimate4", 4.0, 60.0, AttackType.AREA, CombatController.DodgeDirection.BACKWARD)
+	var ultimate5 = AttackData.new("final_ultimate5", 2.5, 40.0, AttackType.OVERHEAD, CombatController.DodgeDirection.LEFT)
+	var ultimate6 = AttackData.new("final_ultimate6", 5.0, 80.0, AttackType.BOSS_SPECIAL, CombatController.DodgeDirection.RIGHT)
 	
 	ultimate1.visual_cue = "final_boss_charge"
+	ultimate1.audio_cue = "final_boss_roar"
 	ultimate2.visual_cue = "final_boss_left_sweep"
+	ultimate2.audio_cue = "final_boss_weapon_whoosh"
 	ultimate3.visual_cue = "final_boss_right_sweep"
-	ultimate4.visual_cue = "final_boss_ultimate"
+	ultimate3.audio_cue = "final_boss_weapon_whoosh"
+	ultimate4.visual_cue = "final_boss_area_devastation"
+	ultimate4.audio_cue = "final_boss_ground_shatter"
+	ultimate5.visual_cue = "final_boss_overhead_slam"
+	ultimate5.audio_cue = "final_boss_slam_windup"
+	ultimate6.visual_cue = "final_boss_ultimate_attack"
+	ultimate6.audio_cue = "final_boss_ultimate_roar"
 	
-	var ultimate_pattern = AttackPattern.new("final_boss_ultimate", [ultimate1, ultimate2, ultimate3, ultimate4], [0.0, 3.0, 4.5, 7.0])
+	var ultimate_pattern = AttackPattern.new("final_boss_ultimate", [ultimate1, ultimate2, ultimate3, ultimate4, ultimate5, ultimate6], [0.0, 4.0, 6.0, 9.0, 13.0, 17.0])
 	attack_patterns["final_boss_ultimate"] = ultimate_pattern
+	
+	# Final Boss: Desperation pattern (when near death)
+	var desp1 = AttackData.new("final_desperation1", 1.0, 30.0, AttackType.COMBO_SEQUENCE, CombatController.DodgeDirection.LEFT)
+	var desp2 = AttackData.new("final_desperation2", 1.0, 30.0, AttackType.COMBO_SEQUENCE, CombatController.DodgeDirection.RIGHT)
+	var desp3 = AttackData.new("final_desperation3", 1.0, 30.0, AttackType.COMBO_SEQUENCE, CombatController.DodgeDirection.BACKWARD)
+	var desp4 = AttackData.new("final_desperation4", 3.0, 100.0, AttackType.BOSS_SPECIAL, CombatController.DodgeDirection.BACKWARD)
+	
+	desp1.visual_cue = "final_desperation_combo1"
+	desp2.visual_cue = "final_desperation_combo2"
+	desp3.visual_cue = "final_desperation_combo3"
+	desp4.visual_cue = "final_desperation_ultimate"
+	
+	var desperation_pattern = AttackPattern.new("final_boss_desperation", [desp1, desp2, desp3, desp4], [0.0, 1.2, 2.4, 4.0])
+	attack_patterns["final_boss_desperation"] = desperation_pattern
 
 func start_attack_pattern(pattern_id: String, enemy_position: Vector3 = Vector3.ZERO) -> bool:
 	"""Start executing an attack pattern"""
@@ -421,10 +556,18 @@ func create_telegraph_visual(attack: AttackData):
 			mesh = BoxMesh.new()
 			(mesh as BoxMesh).size = Vector3(2.0, 0.1, 3.0)
 			material.albedo_color = Color.RED
-		AttackType.SIDE_LEFT, AttackType.SIDE_RIGHT:
+		AttackType.SIDE_LEFT:
 			mesh = BoxMesh.new()
 			(mesh as BoxMesh).size = Vector3(4.0, 0.1, 1.5)
 			material.albedo_color = Color.ORANGE
+			# Rotate for left side attack
+			telegraph_effect.rotation_degrees = Vector3(0, -30, 0)
+		AttackType.SIDE_RIGHT:
+			mesh = BoxMesh.new()
+			(mesh as BoxMesh).size = Vector3(4.0, 0.1, 1.5)
+			material.albedo_color = Color.ORANGE
+			# Rotate for right side attack
+			telegraph_effect.rotation_degrees = Vector3(0, 30, 0)
 		AttackType.AREA:
 			mesh = CylinderMesh.new()
 			(mesh as CylinderMesh).top_radius = attack.attack_area.x / 2.0
@@ -436,28 +579,49 @@ func create_telegraph_visual(attack: AttackData):
 			(mesh as SphereMesh).radius = 1.0
 			(mesh as SphereMesh).height = 2.0
 			material.albedo_color = Color.YELLOW
+		AttackType.COMBO_SEQUENCE:
+			mesh = BoxMesh.new()
+			(mesh as BoxMesh).size = Vector3(2.5, 0.1, 2.5)
+			material.albedo_color = Color.MAGENTA
+		AttackType.BOSS_SPECIAL:
+			mesh = CylinderMesh.new()
+			(mesh as CylinderMesh).top_radius = 2.5
+			(mesh as CylinderMesh).bottom_radius = 2.5
+			(mesh as CylinderMesh).height = 0.2
+			material.albedo_color = Color.DARK_RED
 		_:
 			mesh = BoxMesh.new()
 			material.albedo_color = Color.WHITE
 	
-	# Set up material properties
+	# Enhanced material properties based on attack type
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material.albedo_color.a = 0.6
 	material.emission_enabled = true
 	material.emission = material.albedo_color * 0.5
 	
+	# Add special effects for boss attacks
+	if attack.attack_type == AttackType.BOSS_SPECIAL:
+		material.rim_enabled = true
+		material.rim = Color.WHITE
+		material.rim_tint = 0.5
+		material.emission = material.albedo_color * 1.5
+	
 	telegraph_effect.mesh = mesh
 	telegraph_effect.material_override = material
 	telegraph_effect.position = attack.telegraph_position
+	
+	# Add warning particles for dangerous attacks
+	if attack.damage >= 40.0 or attack.attack_type == AttackType.BOSS_SPECIAL:
+		create_warning_particles(telegraph_effect)
 	
 	# Add to scene
 	get_tree().current_scene.add_child(telegraph_effect)
 	telegraph_effects.append(telegraph_effect)
 	
-	# Animate the telegraph effect
-	animate_telegraph_effect(telegraph_effect, attack.telegraph_time)
+	# Animate the telegraph effect with enhanced timing
+	animate_telegraph_effect(telegraph_effect, attack.telegraph_time, attack.attack_type)
 
-func animate_telegraph_effect(effect: MeshInstance3D, duration: float):
+func animate_telegraph_effect(effect: MeshInstance3D, duration: float, attack_type: AttackType):
 	"""Animate a telegraph effect with pulsing and intensity changes"""
 	if not is_instance_valid(effect) or not effect.material_override:
 		return
@@ -466,17 +630,35 @@ func animate_telegraph_effect(effect: MeshInstance3D, duration: float):
 	var effect_ref = weakref(effect)
 	var material_ref = weakref(effect.material_override)
 	
+	# Different animation patterns based on attack type
+	var pulse_speed = 0.5
+	var intensity_multiplier = 2.0
+	
+	match attack_type:
+		AttackType.BOSS_SPECIAL:
+			pulse_speed = 0.2  # Faster pulsing for boss attacks
+			intensity_multiplier = 3.0
+		AttackType.AREA:
+			pulse_speed = 0.3  # Medium pulsing for area attacks
+			intensity_multiplier = 2.5
+		AttackType.COMBO_SEQUENCE:
+			pulse_speed = 0.15  # Very fast pulsing for combos
+			intensity_multiplier = 2.2
+		_:
+			pulse_speed = 0.5
+			intensity_multiplier = 2.0
+	
 	var tween = create_tween()
 	tween.set_loops()
 	
-	# Pulsing alpha animation
+	# Pulsing alpha animation with variable speed
 	tween.tween_method(
 		func(alpha: float): 
 			var eff = effect_ref.get_ref()
 			var mat = material_ref.get_ref()
 			if eff and mat and is_instance_valid(eff) and eff.is_inside_tree():
 				mat.albedo_color.a = alpha,
-		0.3, 0.8, 0.5
+		0.3, 0.8, pulse_speed
 	)
 	tween.tween_method(
 		func(alpha: float): 
@@ -484,7 +666,7 @@ func animate_telegraph_effect(effect: MeshInstance3D, duration: float):
 			var mat = material_ref.get_ref()
 			if eff and mat and is_instance_valid(eff) and eff.is_inside_tree():
 				mat.albedo_color.a = alpha,
-		0.8, 0.3, 0.5
+		0.8, 0.3, pulse_speed
 	)
 	
 	# Increase intensity as attack approaches
@@ -495,8 +677,19 @@ func animate_telegraph_effect(effect: MeshInstance3D, duration: float):
 			var mat = material_ref.get_ref()
 			if eff and mat and is_instance_valid(eff) and eff.is_inside_tree():
 				mat.emission = mat.albedo_color * intensity,
-		0.5, 2.0, duration
+		0.5, intensity_multiplier, duration
 	)
+	
+	# Add scaling effect for dangerous attacks
+	if attack_type == AttackType.BOSS_SPECIAL or attack_type == AttackType.AREA:
+		var scale_tween = create_tween()
+		scale_tween.tween_method(
+			func(scale: float):
+				var eff = effect_ref.get_ref()
+				if eff and is_instance_valid(eff) and eff.is_inside_tree():
+					eff.scale = Vector3(scale, 1.0, scale),
+			0.8, 1.2, duration
+		)
 
 func remove_telegraph_visual(attack: AttackData):
 	"""Remove telegraph visual effect for an attack"""
@@ -542,20 +735,72 @@ func update_telegraph_effects(delta: float):
 		if not is_instance_valid(effect):
 			telegraph_effects.remove_at(i)
 
+func create_warning_particles(telegraph_effect: MeshInstance3D):
+	"""Create warning particle effects for dangerous attacks"""
+	# Create a simple particle effect using multiple small spheres
+	for i in range(8):
+		var particle = MeshInstance3D.new()
+		var sphere = SphereMesh.new()
+		sphere.radius = 0.1
+		sphere.height = 0.2
+		particle.mesh = sphere
+		
+		var material = StandardMaterial3D.new()
+		material.albedo_color = Color.YELLOW
+		material.emission_enabled = true
+		material.emission = Color.YELLOW * 2.0
+		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		particle.material_override = material
+		
+		# Position particles in a circle around the telegraph
+		var angle = (i / 8.0) * TAU
+		var radius = 1.5
+		particle.position = Vector3(cos(angle) * radius, 0.5, sin(angle) * radius)
+		
+		telegraph_effect.add_child(particle)
+		
+		# Animate particles
+		var tween = create_tween()
+		tween.set_loops()
+		tween.tween_property(particle, "position:y", 1.0, 0.5)
+		tween.tween_property(particle, "position:y", 0.5, 0.5)
+
 func play_attack_audio(audio_cue: String):
 	"""Play audio cue for attack"""
 	if not audio_player:
 		return
 	
-	# This would load and play appropriate audio files
-	# For now, just print the audio cue
+	# Enhanced audio system with different audio cues
 	print("EnemyAttackSystem: Playing audio cue: ", audio_cue)
+	
+	# Create different audio feedback based on cue type
+	match audio_cue:
+		"boss_roar_windup", "final_boss_roar", "final_boss_ultimate_roar":
+			# Boss attacks get special treatment
+			print("  🔊 BOSS ROAR - High intensity audio!")
+		"ground_pound_windup", "boss_ground_slam_windup", "final_boss_ground_shatter":
+			# Ground attacks
+			print("  🔊 Ground impact warning!")
+		"spell_charge", "storm_buildup", "meteor_incoming":
+			# Magic attacks
+			print("  🔊 Magical energy building!")
+		"dash_windup", "blade_spin_windup":
+			# Fast attacks
+			print("  🔊 Quick attack incoming!")
+		_:
+			print("  🔊 Standard attack audio")
 	
 	# In a full implementation, you would:
 	# var audio_stream = load("res://audio/combat/" + audio_cue + ".ogg")
 	# if audio_stream:
 	#     audio_player.stream = audio_stream
 	#     audio_player.play()
+	#     
+	#     # Adjust volume based on attack importance
+	#     if "boss" in audio_cue or "final" in audio_cue:
+	#         audio_player.volume_db = 5.0  # Louder for boss attacks
+	#     else:
+	#         audio_player.volume_db = 0.0
 
 func get_attack_type_string(attack_type: AttackType) -> String:
 	"""Convert AttackType enum to string"""
@@ -601,17 +846,17 @@ func get_available_patterns_for_enemy_type(enemy_type: EnemyType) -> Array[Strin
 		EnemyType.RANGED_ARCHER:
 			patterns = ["archer_single_shot", "archer_triple_volley"]
 		EnemyType.HEAVY_BRUISER:
-			patterns = ["bruiser_slam", "bruiser_ground_pound"]
+			patterns = ["bruiser_slam", "bruiser_ground_pound", "bruiser_bull_rush", "bruiser_slam_pound_combo"]
 		EnemyType.AGILE_ROGUE:
-			patterns = ["rogue_dash_left", "rogue_triple_combo"]
+			patterns = ["rogue_dash_left", "rogue_dash_right", "rogue_triple_combo", "rogue_spinning_blades", "rogue_shadow_strike_combo"]
 		EnemyType.MAGE_CASTER:
-			patterns = ["mage_fireball", "mage_lightning_storm"]
+			patterns = ["mage_fireball", "mage_lightning_storm", "mage_ice_shard_barrage", "mage_meteor_strike", "mage_arcane_missile_combo"]
 		EnemyType.BOSS_TIER_1:
-			patterns = ["boss_tier1_combo"]
+			patterns = ["boss_tier1_combo", "boss_tier1_alternate"]
 		EnemyType.BOSS_TIER_2:
-			patterns = ["boss_tier2_complex"]
+			patterns = ["boss_tier2_complex", "boss_tier2_enrage"]
 		EnemyType.BOSS_FINAL:
-			patterns = ["final_boss_ultimate"]
+			patterns = ["final_boss_ultimate", "final_boss_desperation"]
 	
 	return patterns
 

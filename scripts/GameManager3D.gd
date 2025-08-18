@@ -91,6 +91,22 @@ func _ready():
 	else:
 		print("Warning: Player not found for signal connections")
 	
+	# Set up touch zone indicators for mobile combat
+	setup_touch_zone_indicators()
+	
+	# Add combat feedback test in debug mode
+	if OS.is_debug_build():
+		var feedback_test = preload("res://test_combat_feedback.gd").new()
+		feedback_test.name = "CombatFeedbackTest"
+		add_child(feedback_test)
+		print("✅ Combat feedback test system added (F1-F8 for tests)")
+		
+		# Add mobile combat test
+		var mobile_combat_test = preload("res://test_mobile_combat.gd").new()
+		mobile_combat_test.name = "MobileCombatTest"
+		add_child(mobile_combat_test)
+		print("✅ Mobile combat test system added (F9-F12 for tests)")
+	
 	update_ui()
 
 func setup_background_music():
@@ -374,6 +390,23 @@ func setup_enemy_spawner():
 	
 	print("Enemy spawner system initialized")
 	print("🗡️ Enemy attack system ready - use number keys 1-9 to test!")
+
+func setup_touch_zone_indicators():
+	"""Set up touch zone indicators for mobile combat"""
+	# Only create touch zones on mobile platforms or when testing
+	if OS.has_feature("mobile") or OS.is_debug_build():
+		var touch_zone_indicator = preload("res://scripts/TouchZoneIndicator.gd").new()
+		touch_zone_indicator.name = "TouchZoneIndicator"
+		
+		# Add to UI layer
+		var ui_layer = $UI
+		if ui_layer:
+			ui_layer.add_child(touch_zone_indicator)
+			print("✅ Touch zone indicators created for mobile combat")
+		else:
+			print("❌ Warning: UI layer not found for touch zone indicators")
+	else:
+		print("Touch zone indicators skipped - not on mobile platform")
 
 func start_combat(formation_id: String, encounter_lane: int):
 	print("Starting combat with formation: ", formation_id)

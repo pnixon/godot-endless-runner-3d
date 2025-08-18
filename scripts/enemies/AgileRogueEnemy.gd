@@ -53,30 +53,45 @@ func choose_attack_pattern(available_patterns: Array[String]) -> String:
 	var distance = global_position.distance_to(target_player.global_position)
 	var health_percentage = current_health / max_health
 	
-	# When at optimal range and healthy, use combo attacks
-	if distance <= 2.5 and health_percentage > 0.4:
-		if "rogue_triple_combo" in available_patterns:
+	# When surrounded or overwhelmed, use spinning blades
+	if distance <= 2.0 and health_percentage < 0.3:
+		if "rogue_spinning_blades" in available_patterns:
+			return "rogue_spinning_blades"
+	
+	# When at optimal range and healthy, use advanced combos
+	if distance <= 2.5 and health_percentage > 0.5:
+		if "rogue_shadow_strike_combo" in available_patterns and last_attack_pattern != "rogue_shadow_strike_combo":
+			return "rogue_shadow_strike_combo"
+		elif "rogue_triple_combo" in available_patterns:
 			return "rogue_triple_combo"
 	
-	# When player is to the side, use dash attacks
+	# When player is to the side, use appropriate dash attacks
 	if can_dash() and distance > 2.0 and distance < 5.0:
 		var player_direction = (target_player.global_position - global_position).normalized()
-		var side_dot = abs(player_direction.dot(transform.basis.x))
+		var right_dot = player_direction.dot(transform.basis.x)
 		
-		if side_dot > 0.5:  # Player is to the side
+		if right_dot > 0.3:  # Player is to the right
+			if "rogue_dash_right" in available_patterns:
+				return "rogue_dash_right"
+		elif right_dot < -0.3:  # Player is to the left
 			if "rogue_dash_left" in available_patterns:
 				return "rogue_dash_left"
 	
-	# When low on health, prefer quick dash attacks for hit-and-run
-	if health_percentage < 0.4 and can_dash():
-		if "rogue_dash_left" in available_patterns:
-			return "rogue_dash_left"
+	# When low on health, prefer evasive attacks
+	if health_percentage < 0.4:
+		if can_dash():
+			var dash_patterns = ["rogue_dash_left", "rogue_dash_right"]
+			for pattern in dash_patterns:
+				if pattern in available_patterns:
+					return pattern
+		elif "rogue_spinning_blades" in available_patterns:
+			return "rogue_spinning_blades"
 	
-	# Default to combo if close, dash if available
-	if distance <= 2.5 and "rogue_triple_combo" in available_patterns:
-		return "rogue_triple_combo"
-	elif can_dash() and "rogue_dash_left" in available_patterns:
-		return "rogue_dash_left"
+	# Default selection with variety
+	var preferred_patterns = ["rogue_triple_combo", "rogue_shadow_strike_combo", "rogue_dash_left", "rogue_dash_right"]
+	for pattern in preferred_patterns:
+		if pattern in available_patterns and pattern != last_attack_pattern:
+			return pattern
 	
 	return super.choose_attack_pattern(available_patterns)
 

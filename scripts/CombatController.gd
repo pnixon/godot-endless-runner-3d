@@ -41,6 +41,7 @@ var original_position: Vector3
 # References
 var player: RPGPlayer3D
 var mobile_input_manager: MobileInputManager
+var feedback_system: CombatFeedbackSystem
 var incoming_attacks: Array[AttackData] = []
 
 # Perfect dodge tracking
@@ -76,13 +77,25 @@ func _ready():
 	# Find mobile input manager (it's an autoload)
 	mobile_input_manager = get_node("/root/MobileInputManager")
 	if mobile_input_manager:
-		mobile_input_manager.gesture_detected.connect(_on_gesture_detected)
-		print("CombatController: Connected to mobile input manager")
+		# Connect to combat-specific signals
+		mobile_input_manager.dodge_gesture.connect(_on_dodge_gesture)
+		mobile_input_manager.block_gesture_started.connect(_on_block_gesture_started)
+		mobile_input_manager.block_gesture_ended.connect(_on_block_gesture_ended)
+		mobile_input_manager.dash_gesture.connect(_on_dash_gesture)
+		
+		# Enable combat mode
+		mobile_input_manager.set_combat_mode(true)
+		
+		print("CombatController: Connected to mobile input manager with combat gestures")
 	else:
 		print("CombatController: Mobile input manager not found, using keyboard only")
 	
 	# Store original position
 	original_position = player.position
+	
+	# Initialize feedback system
+	feedback_system = CombatFeedbackSystem.new()
+	add_child(feedback_system)
 	
 	print("CombatController initialized with dodge and block mechanics")
 	print("  - Perfect dodge window: ", perfect_dodge_window, "s")
@@ -157,21 +170,48 @@ func handle_keyboard_input():
 	elif is_blocking:
 		end_block(true)
 
-func _on_gesture_detected(gesture_type: MobileInputManager.GestureType, position: Vector2):
-	"""Handle mobile gesture input for combat actions"""
-	match gesture_type:
-		MobileInputManager.GestureType.SWIPE_LEFT:
-			attempt_dodge(DodgeDirection.LEFT)
-		MobileInputManager.GestureType.SWIPE_RIGHT:
-			attempt_dodge(DodgeDirection.RIGHT)
-		MobileInputManager.GestureType.SWIPE_DOWN:
-			attempt_dodge(DodgeDirection.BACKWARD)
-		MobileInputManager.GestureType.LONG_PRESS:
-			if not is_blocking and current_state == CombatState.NORMAL:
-				start_block()
-		MobileInputManager.GestureType.TAP:
-			if is_blocking:
-				end_block(true)
+# New combat gesture handlers
+
+func _on_dodge_gesture(direction: String):
+	"""Handle dodge gesture from mobile input"""
+	var dodge_dir: DodgeDirection
+	match direction:
+		"left":
+			dodge_dir = DodgeDirection.LEFT
+		"right":
+			dodge_dir = DodgeDirection.RIGHT
+		"backward":
+			dodge_dir = DodgeDirection.BACKWARD
+		_:
+			return
+	
+	attempt_dodge(dodge_dir)
+
+func _on_block_gesture_started():
+	"""Handle block gesture start from mobile input"""
+	if not is_blocking and current_state == CombatState.NORMAL:
+		start_block()
+
+func _on_block_gesture_ended():
+	"""Handle block gesture end from mobile input"""
+	if is_blocking:
+		end_block(true)
+
+func _on_dash_gesture():
+	"""Handle dash gesture from mobile input (swipe up)"""
+	# Dash forward - move player forward one row if possible
+	if player and player.current_row < 3:
+		player.current_row += 1
+		player.target_z = player.ROW_POSITIONS[player.current_row]
+		
+		# Create dash effect
+		create_dash_effect()
+		
+		# Trigger haptic feedback
+		if mobile_input_manager:
+			mobile_input_manager.trigger_combat_haptic_feedback("dash")
+		
+		print("CombatController: Dash forward to row ", player.current_row)
 
 func attempt_dodge(direction: DodgeDirection) -> bool:
 	"""Attempt to perform a dodge in the specified direction"""
@@ -242,8 +282,8 @@ func execute_dodge(direction: DodgeDirection, is_perfect: bool):
 	
 	# Trigger haptic feedback
 	if mobile_input_manager:
-		var intensity = 0.3 if not is_perfect else 0.5
-		mobile_input_manager.trigger_haptic_feedback(intensity, 0.1)
+		var feedback_type = "perfect_dodge" if is_perfect else "dodge"
+		mobile_input_manager.trigger_combat_haptic_feedback(feedback_type)
 	
 	print("CombatController: Executed ", "perfect " if is_perfect else "", "dodge ", get_dodge_direction_string(direction))
 
@@ -314,7 +354,7 @@ func start_block():
 	
 	# Trigger haptic feedback
 	if mobile_input_manager:
-		mobile_input_manager.trigger_haptic_feedback(0.4, 0.15)
+		mobile_input_manager.trigger_combat_haptic_feedback("block_start")
 	
 	# Create visual effect
 	create_block_effect()
@@ -372,10 +412,12 @@ func execute_attack(attack: AttackData):
 	var damage_taken = attack.damage
 	var attack_blocked = false
 	var attack_dodged = false
+	var perfect_action = false
 	
 	# Check if player is invincible
 	if current_state == CombatState.INVINCIBLE:
 		print("CombatController: Attack ", attack.attack_id, " blocked by invincibility frames")
+		handle_attack_dodged(attack, true)  # Invincibility counts as perfect dodge
 		return
 	
 	# Check if player is blocking
@@ -386,26 +428,32 @@ func execute_attack(attack: AttackData):
 		# Check for perfect block
 		if block_timer <= perfect_block_window:
 			damage_reduction = perfect_block_reduction
+			perfect_action = true
 			print("CombatController: PERFECT BLOCK!")
 			create_perfect_block_effect()
 		
 		damage_taken *= (1.0 - damage_reduction)
 		print("CombatController: Attack blocked! Damage reduced from ", attack.damage, " to ", damage_taken)
+		handle_attack_blocked(attack, perfect_action)
 	
 	# Check if player is dodging in the correct direction
 	elif current_state == CombatState.DODGING:
 		if dodge_direction == attack.perfect_dodge_direction:
 			attack_dodged = true
 			damage_taken = 0.0
+			perfect_action = true
 			print("CombatController: Attack dodged successfully!")
+			handle_attack_dodged(attack, true)
 		else:
 			print("CombatController: Wrong dodge direction, taking partial damage")
 			damage_taken *= 0.5  # Partial damage for wrong dodge direction
+			handle_attack_dodged(attack, false)
 	
 	# Apply damage if any
 	if damage_taken > 0:
 		player.take_damage(damage_taken)
 		create_damage_effect(attack.attack_type, damage_taken)
+		handle_attack_hit(attack)
 	
 	# Create attack effect
 	create_attack_effect(attack)
@@ -416,6 +464,26 @@ func register_incoming_attack(attack_id: String, telegraph_time: float, damage: 
 	incoming_attacks.append(attack)
 	
 	print("CombatController: Registered incoming attack '", attack_id, "' - telegraph: ", telegraph_time, "s, damage: ", damage, ", dodge: ", get_dodge_direction_string(required_dodge_direction))
+
+func handle_attack_hit(attack: AttackData):
+	"""Handle when an attack successfully hits the player"""
+	if feedback_system:
+		feedback_system.force_break_combo()
+	
+	# Create hit effect
+	create_hit_effect(attack)
+
+func handle_attack_dodged(attack: AttackData, perfect: bool):
+	"""Handle when an attack is successfully dodged"""
+	print("Attack dodged: ", attack.attack_id, " (perfect: ", perfect, ")")
+	
+	# The feedback system will handle this through the dodge_performed signal
+
+func handle_attack_blocked(attack: AttackData, perfect: bool):
+	"""Handle when an attack is successfully blocked"""
+	print("Attack blocked: ", attack.attack_id, " (perfect: ", perfect, ")")
+	
+	# The feedback system will handle this through the block_ended signal
 
 func get_dodge_direction_string(direction: DodgeDirection) -> String:
 	"""Convert dodge direction enum to string"""
@@ -542,6 +610,65 @@ func create_attack_effect(attack: AttackData):
 	"""Create visual effect for incoming attack"""
 	print("CombatController: Creating attack effect for ", attack.attack_id)
 	# This would create attack animations, screen effects, etc.
+
+func create_hit_effect(attack: AttackData):
+	"""Create visual effect when player is hit by attack"""
+	if not player:
+		return
+	
+	# Create red damage effect
+	var effect = MeshInstance3D.new()
+	var sphere = SphereMesh.new()
+	sphere.radius = 0.8
+	sphere.height = 1.6
+	effect.mesh = sphere
+	
+	var material = StandardMaterial3D.new()
+	material.albedo_color = Color.RED
+	material.emission_enabled = true
+	material.emission = Color.RED * 1.5
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	effect.material_override = material
+	
+	effect.position = player.position + Vector3(0, 1.0, 0)
+	player.get_parent().add_child(effect)
+	
+	# Animate effect
+	var tween = create_tween()
+	tween.parallel().tween_property(effect, "scale", Vector3(1.5, 1.5, 1.5), 0.2)
+	tween.parallel().tween_property(material, "albedo_color:a", 0.0, 0.2)
+	tween.tween_callback(effect.queue_free)
+	
+	print("CombatController: Created hit effect for ", attack.attack_id)
+
+func create_dash_effect():
+	"""Create visual effect for dash forward"""
+	if not player:
+		return
+	
+	# Create dash trail effect
+	var effect = MeshInstance3D.new()
+	var box = BoxMesh.new()
+	box.size = Vector3(1.0, 0.2, 2.0)
+	effect.mesh = box
+	
+	var material = StandardMaterial3D.new()
+	material.albedo_color = Color.CYAN
+	material.emission_enabled = true
+	material.emission = Color.CYAN * 1.2
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	effect.material_override = material
+	
+	effect.position = player.position + Vector3(0, 0.1, 0)
+	player.get_parent().add_child(effect)
+	
+	# Animate dash trail
+	var tween = create_tween()
+	tween.parallel().tween_property(effect, "scale", Vector3(0.5, 0.1, 3.0), 0.4)
+	tween.parallel().tween_property(material, "albedo_color:a", 0.0, 0.4)
+	tween.tween_callback(effect.queue_free)
+	
+	print("CombatController: Created dash effect")
 
 # Debug Methods
 

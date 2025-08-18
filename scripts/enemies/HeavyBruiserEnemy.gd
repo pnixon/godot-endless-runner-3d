@@ -32,26 +32,38 @@ func choose_attack_pattern(available_patterns: Array[String]) -> String:
 	var distance = global_position.distance_to(target_player.global_position)
 	var health_percentage = current_health / max_health
 	
-	# When player is very close, use ground pound to create space
-	if distance < 2.5 and "bruiser_ground_pound" in available_patterns:
-		return "bruiser_ground_pound"
+	# When player is very close, use area attacks to create space
+	if distance < 2.5:
+		if "bruiser_ground_pound" in available_patterns:
+			return "bruiser_ground_pound"
+		elif "bruiser_slam_pound_combo" in available_patterns:
+			return "bruiser_slam_pound_combo"
 	
-	# When at medium range and healthy, alternate between attacks
-	if distance >= 2.5 and distance <= 4.0:
-		if health_percentage > 0.5:
-			# Alternate between slam and ground pound
-			if last_attack_pattern == "bruiser_slam" and "bruiser_ground_pound" in available_patterns:
-				return "bruiser_ground_pound"
-			elif "bruiser_slam" in available_patterns:
-				return "bruiser_slam"
+	# When player is far, use bull rush to close distance
+	if distance > 5.0 and "bruiser_bull_rush" in available_patterns:
+		return "bruiser_bull_rush"
 	
-	# When low on health, prefer area attacks to keep player away
-	if health_percentage < 0.3 and "bruiser_ground_pound" in available_patterns:
-		return "bruiser_ground_pound"
+	# When at medium range and healthy, use combo attacks
+	if distance >= 2.5 and distance <= 5.0 and health_percentage > 0.4:
+		if "bruiser_slam_pound_combo" in available_patterns and last_attack_pattern != "bruiser_slam_pound_combo":
+			return "bruiser_slam_pound_combo"
+		elif last_attack_pattern == "bruiser_slam" and "bruiser_ground_pound" in available_patterns:
+			return "bruiser_ground_pound"
+		elif "bruiser_slam" in available_patterns:
+			return "bruiser_slam"
 	
-	# Default to slam attack
-	if "bruiser_slam" in available_patterns:
-		return "bruiser_slam"
+	# When low on health, prefer powerful area attacks
+	if health_percentage < 0.3:
+		if "bruiser_slam_pound_combo" in available_patterns:
+			return "bruiser_slam_pound_combo"
+		elif "bruiser_ground_pound" in available_patterns:
+			return "bruiser_ground_pound"
+	
+	# Default selection with variety
+	var preferred_patterns = ["bruiser_slam", "bruiser_ground_pound", "bruiser_bull_rush"]
+	for pattern in preferred_patterns:
+		if pattern in available_patterns and pattern != last_attack_pattern:
+			return pattern
 	
 	return super.choose_attack_pattern(available_patterns)
 

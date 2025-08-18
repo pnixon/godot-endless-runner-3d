@@ -89,19 +89,19 @@ func setup_phase_patterns():
 	"""Set up attack patterns for each phase"""
 	match boss_tier:
 		1:  # Tier 1 Boss phases
-			phase_attack_patterns[1] = ["boss_tier1_combo", "basic_melee_combo"]
-			phase_attack_patterns[2] = ["boss_tier1_combo", "bruiser_slam"]
-			phase_attack_patterns[3] = ["boss_tier1_combo", "bruiser_ground_pound"]
+			phase_attack_patterns[1] = ["boss_tier1_combo", "boss_tier1_alternate"]
+			phase_attack_patterns[2] = ["boss_tier1_combo", "boss_tier1_alternate", "bruiser_slam_pound_combo"]
+			phase_attack_patterns[3] = ["boss_tier1_combo", "boss_tier1_alternate", "bruiser_ground_pound"]
 			
 		2:  # Tier 2 Boss phases
-			phase_attack_patterns[1] = ["boss_tier2_complex", "archer_triple_volley"]
-			phase_attack_patterns[2] = ["boss_tier2_complex", "mage_lightning_storm"]
-			phase_attack_patterns[3] = ["boss_tier2_complex", "rogue_triple_combo"]
+			phase_attack_patterns[1] = ["boss_tier2_complex", "archer_triple_volley", "mage_ice_shard_barrage"]
+			phase_attack_patterns[2] = ["boss_tier2_complex", "boss_tier2_enrage", "mage_lightning_storm"]
+			phase_attack_patterns[3] = ["boss_tier2_complex", "boss_tier2_enrage", "rogue_shadow_strike_combo"]
 			
 		3:  # Final Boss phases
-			phase_attack_patterns[1] = ["final_boss_ultimate", "boss_tier1_combo"]
-			phase_attack_patterns[2] = ["final_boss_ultimate", "boss_tier2_complex"]
-			phase_attack_patterns[3] = ["final_boss_ultimate", "final_boss_ultimate"]  # Double ultimate in final phase
+			phase_attack_patterns[1] = ["final_boss_ultimate", "boss_tier1_combo", "boss_tier2_complex"]
+			phase_attack_patterns[2] = ["final_boss_ultimate", "boss_tier2_enrage", "final_boss_desperation"]
+			phase_attack_patterns[3] = ["final_boss_ultimate", "final_boss_desperation"]  # Ultimate and desperation in final phase
 
 func _physics_process(delta):
 	# Update special attack timer
@@ -248,11 +248,48 @@ func choose_special_attack() -> String:
 	if available_patterns.is_empty():
 		return ""
 	
+	var health_percentage = current_health / max_health
+	
+	# When near death, use desperation attacks
+	if health_percentage < 0.15 and boss_tier == 3:
+		if "final_boss_desperation" in available_patterns:
+			return "final_boss_desperation"
+	
 	# In enrage mode, prefer the most powerful attacks
 	if is_enraged:
+		var enrage_patterns = []
 		for pattern in available_patterns:
-			if "ultimate" in pattern or "complex" in pattern:
-				return pattern
+			if "ultimate" in pattern or "enrage" in pattern or "desperation" in pattern:
+				enrage_patterns.append(pattern)
+		
+		if enrage_patterns.size() > 0:
+			return enrage_patterns[combo_counter % enrage_patterns.size()]
+	
+	# Phase-specific special attack selection
+	match current_phase:
+		1:  # Early phase - use basic boss patterns
+			var early_patterns = []
+			for pattern in available_patterns:
+				if "tier1" in pattern or "combo" in pattern:
+					early_patterns.append(pattern)
+			if early_patterns.size() > 0:
+				return early_patterns[combo_counter % early_patterns.size()]
+		
+		2:  # Mid phase - use complex patterns
+			var mid_patterns = []
+			for pattern in available_patterns:
+				if "complex" in pattern or "enrage" in pattern:
+					mid_patterns.append(pattern)
+			if mid_patterns.size() > 0:
+				return mid_patterns[combo_counter % mid_patterns.size()]
+		
+		3:  # Final phase - use ultimate patterns
+			var final_patterns = []
+			for pattern in available_patterns:
+				if "ultimate" in pattern or "desperation" in pattern:
+					final_patterns.append(pattern)
+			if final_patterns.size() > 0:
+				return final_patterns[combo_counter % final_patterns.size()]
 	
 	# Choose based on combo counter for variety
 	combo_counter = (combo_counter + 1) % max_combo_length
