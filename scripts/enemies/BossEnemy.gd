@@ -7,6 +7,11 @@ class_name BossEnemy
 signal phase_changed(old_phase: int, new_phase: int)
 signal boss_enraged()
 signal special_attack_triggered(attack_name: String)
+signal boss_staggered()
+signal break_mode_entered()
+signal break_mode_ended()
+signal vulnerability_opened()
+signal vulnerability_closed()
 
 # Boss-specific properties
 @export var boss_tier: int = 1  # 1, 2, or 3 (final boss)
@@ -31,6 +36,19 @@ var max_combo_length: int = 4
 # Visual effects
 var phase_transition_effect: Node3D
 var enrage_effect: Node3D
+
+# DQ Dai stagger/break mode mechanics
+var is_staggered: bool = false
+var stagger_duration: float = 2.0
+var stagger_timer: float = 0.0
+var is_in_break_mode: bool = false
+var break_mode_timer: float = 0.0
+var break_mode_duration: float = 5.0
+var is_vulnerable: bool = false
+var vulnerability_timer: float = 0.0
+var vulnerability_duration: float = 3.0
+var stagger_effect: Node3D
+var break_mode_effect: Node3D
 
 func _ready():
 	# Configure boss stats based on tier
@@ -106,20 +124,23 @@ func setup_phase_patterns():
 func _physics_process(delta):
 	# Update special attack timer
 	special_attack_timer += delta
-	
+
 	# Handle phase transition
 	if is_transitioning:
 		handle_phase_transition(delta)
 	else:
 		# Check for phase transitions
 		check_phase_transition()
-		
+
 		# Check for enrage
 		check_enrage_condition()
-		
+
 		# Handle special attacks
 		handle_special_attacks(delta)
-	
+
+	# Update stagger/break mode timers
+	update_stagger_mechanics(delta)
+
 	# Call parent physics process
 	super._physics_process(delta)
 
@@ -432,6 +453,231 @@ func force_enrage():
 	"""Force boss into enrage mode (for testing)"""
 	if not is_enraged:
 		enter_enrage_mode()
+
+
+## DQ Dai Combat Mechanics
+
+func update_stagger_mechanics(delta: float):
+	"""Update stagger and break mode timers"""
+	# Update stagger timer
+	if is_staggered:
+		stagger_timer -= delta
+		if stagger_timer <= 0:
+			exit_stagger()
+
+	# Update break mode timer
+	if is_in_break_mode:
+		break_mode_timer -= delta
+		if break_mode_timer <= 0:
+			exit_break_mode()
+
+	# Update vulnerability window timer
+	if is_vulnerable:
+		vulnerability_timer -= delta
+		if vulnerability_timer <= 0:
+			close_vulnerability_window()
+
+
+func apply_stagger():
+	"""Apply stagger state to boss (called by DaiCombatController)"""
+	if is_staggered or is_in_break_mode:
+		return
+
+	is_staggered = true
+	stagger_timer = stagger_duration
+	current_state = EnemyState.STUNNED
+
+	# Stop current attack
+	if attack_system:
+		attack_system.stop_current_pattern()
+
+	# Create stagger visual effect
+	create_stagger_effect()
+
+	emit_signal("boss_staggered")
+	print("BossEnemy: STAGGERED for ", stagger_duration, " seconds!")
+
+
+func exit_stagger():
+	"""Exit stagger state"""
+	is_staggered = false
+	stagger_timer = 0.0
+
+	if not is_in_break_mode:
+		current_state = EnemyState.PURSUING
+
+	# Remove stagger effect
+	if stagger_effect:
+		stagger_effect.queue_free()
+		stagger_effect = null
+
+
+func enter_break_mode(duration: float = 5.0):
+	"""Enter break mode - massive damage vulnerability window"""
+	if is_in_break_mode:
+		return
+
+	is_in_break_mode = true
+	break_mode_duration = duration
+	break_mode_timer = break_mode_duration
+	is_staggered = false  # Break mode overrides stagger
+	current_state = EnemyState.STUNNED
+
+	# Stop all attacks
+	if attack_system:
+		attack_system.stop_current_pattern()
+
+	# Create break mode visual effect
+	create_break_mode_effect()
+
+	emit_signal("break_mode_entered")
+	print("BossEnemy: BREAK MODE! Massive damage window for ", duration, " seconds!")
+
+
+func exit_break_mode():
+	"""Exit break mode and return to normal combat"""
+	is_in_break_mode = false
+	break_mode_timer = 0.0
+	current_state = EnemyState.PURSUING
+
+	# Remove break mode effect
+	if break_mode_effect:
+		break_mode_effect.queue_free()
+		break_mode_effect = null
+
+	emit_signal("break_mode_ended")
+	print("BossEnemy: Break mode ended! Boss returns to normal combat.")
+
+
+func open_vulnerability_window(duration: float = 3.0):
+	"""Open a vulnerability window where perfect hits can stagger the boss"""
+	is_vulnerable = true
+	vulnerability_duration = duration
+	vulnerability_timer = vulnerability_duration
+
+	emit_signal("vulnerability_opened")
+	print("BossEnemy: Vulnerability window opened for ", duration, " seconds!")
+
+
+func close_vulnerability_window():
+	"""Close the vulnerability window"""
+	is_vulnerable = false
+	vulnerability_timer = 0.0
+
+	emit_signal("vulnerability_closed")
+
+
+func is_boss_vulnerable() -> bool:
+	"""Check if boss is currently in vulnerability window"""
+	return is_vulnerable
+
+
+func is_boss_in_break_mode() -> bool:
+	"""Check if boss is in break mode"""
+	return is_in_break_mode
+
+
+func is_boss_staggered() -> bool:
+	"""Check if boss is staggered"""
+	return is_staggered
+
+
+func create_stagger_effect():
+	"""Create visual effect for stagger state"""
+	var effect = MeshInstance3D.new()
+	var torus = TorusMesh.new()
+	torus.inner_radius = 1.5
+	torus.outer_radius = 2.0
+	effect.mesh = torus
+
+	var material = StandardMaterial3D.new()
+	material.albedo_color = Color.YELLOW
+	material.emission_enabled = true
+	material.emission = Color.YELLOW * 2.0
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color.a = 0.6
+	effect.material_override = material
+
+	effect.position = global_position + Vector3(0, 2, 0)
+	get_parent().add_child(effect)
+	stagger_effect = effect
+
+	# Animate spinning stars
+	var tween = create_tween()
+	tween.set_loops()
+	tween.tween_property(effect, "rotation:y", TAU, 1.0)
+
+	# Remove after stagger duration
+	var removal_tween = create_tween()
+	removal_tween.tween_delay(stagger_duration)
+	removal_tween.tween_callback(func():
+		if stagger_effect:
+			stagger_effect.queue_free()
+			stagger_effect = null
+	)
+
+
+func create_break_mode_effect():
+	"""Create visual effect for break mode"""
+	var effect = MeshInstance3D.new()
+	var sphere = SphereMesh.new()
+	sphere.radius = 3.5
+	sphere.height = 7.0
+	effect.mesh = sphere
+
+	var material = StandardMaterial3D.new()
+	material.albedo_color = Color.CYAN
+	material.emission_enabled = true
+	material.emission = Color.CYAN * 4.0
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color.a = 0.4
+	effect.material_override = material
+
+	effect.position = global_position
+	get_parent().add_child(effect)
+	break_mode_effect = effect
+
+	# Animate pulsing and rotation
+	var tween = create_tween()
+	tween.set_loops()
+	tween.tween_property(effect, "scale", Vector3(1.2, 1.2, 1.2), 0.3)
+	tween.tween_property(effect, "scale", Vector3(1.0, 1.0, 1.0), 0.3)
+
+	var rotation_tween = create_tween()
+	rotation_tween.set_loops()
+	rotation_tween.tween_property(effect, "rotation:y", TAU, 2.0)
+
+	# Remove after break mode duration
+	var removal_tween = create_tween()
+	removal_tween.tween_delay(break_mode_duration)
+	removal_tween.tween_callback(func():
+		if break_mode_effect:
+			break_mode_effect.queue_free()
+			break_mode_effect = null
+	)
+
+
+func take_damage(damage: float, damage_type: String = "physical"):
+	"""Override damage handling for break mode bonus damage"""
+	var actual_damage = damage
+
+	# Bosses have damage reduction during phase transitions
+	if is_transitioning:
+		actual_damage *= 0.3  # 70% damage reduction during transition
+
+	# Double damage during break mode (handled in DaiCombatController, but we can apply here too)
+	if is_in_break_mode:
+		actual_damage *= 2.0
+		print("BossEnemy: Taking DOUBLE damage in break mode! (", actual_damage, ")")
+
+	# Call parent with modified damage
+	super.take_damage(actual_damage, damage_type)
+
+	# Bosses don't get interrupted as easily
+	# Only interrupt on very high damage
+	if damage >= max_health * 0.25:  # 25% or more damage
+		interrupt_attack()
+
 
 # Debug methods
 
