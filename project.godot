@@ -25,6 +25,7 @@ config/icon="res://assets/icon.svg"
 MobileInputManager="*res://scripts/MobileInputManager.gd"
 HapticController="*res://scripts/HapticController.gd"
 MobileUIManager="*res://scripts/MobileUIManager.gd"
+GameModeManager="*res://scripts/game_modes/GameModeManager.gd"
 
 [display]
 
