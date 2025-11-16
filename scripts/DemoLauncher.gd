@@ -89,6 +89,13 @@ func setup_launcher_ui():
 	mobile_button.custom_minimum_size = Vector2(300, 50)
 	mobile_button.pressed.connect(_on_mobile_demo_button_pressed)
 	button_container.add_child(mobile_button)
+
+	# Combat level button
+	var combat_button = Button.new()
+	combat_button.text = "⚔️ Combat Level (Multi-Enemy)"
+	combat_button.custom_minimum_size = Vector2(300, 50)
+	combat_button.pressed.connect(_on_combat_level_button_pressed)
+	button_container.add_child(combat_button)
 	
 	# Instructions
 	var instructions = Label.new()
@@ -119,6 +126,10 @@ func _on_gesture_demo_button_pressed():
 func _on_mobile_demo_button_pressed():
 	print("Loading mobile input demo...")
 	get_tree().change_scene_to_file("res://scenes/MobileInputDemo.tscn")
+
+func _on_combat_level_button_pressed():
+	print("Loading combat level...")
+	get_tree().change_scene_to_file("res://scenes/CombatLevel.tscn")
 
 func _input(event):
 	# Music controls
