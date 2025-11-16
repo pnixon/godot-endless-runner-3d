@@ -73,16 +73,16 @@ func _ready():
 	add_to_group("game_manager")
 	game_over_label.visible = false
 	restart_label.visible = false
-	
+
 	# Initialize combat grid
 	setup_combat_grid()
-	
+
 	# Set up enemy spawner
 	setup_enemy_spawner()
-	
+
 	# Set up background music
 	setup_background_music()
-	
+
 	# Connect to player signals
 	var player = get_tree().get_first_node_in_group("player")
 	if player:
@@ -90,24 +90,38 @@ func _ready():
 		print("Connected to player death signal")
 	else:
 		print("Warning: Player not found for signal connections")
-	
+
 	# Set up touch zone indicators for mobile combat
 	setup_touch_zone_indicators()
-	
+
 	# Add combat feedback test in debug mode
 	if OS.is_debug_build():
 		var feedback_test = preload("res://test_combat_feedback.gd").new()
 		feedback_test.name = "CombatFeedbackTest"
 		add_child(feedback_test)
 		print("✅ Combat feedback test system added (F1-F8 for tests)")
-		
+
 		# Add mobile combat test
 		var mobile_combat_test = preload("res://test_mobile_combat.gd").new()
 		mobile_combat_test.name = "MobileCombatTest"
 		add_child(mobile_combat_test)
 		print("✅ Mobile combat test system added (F9-F12 for tests)")
-	
+
+	# Hide instructions after 5 seconds
+	fade_out_instructions()
+
 	update_ui()
+
+func fade_out_instructions():
+	"""Fade out the instructions label after a delay"""
+	await get_tree().create_timer(5.0).timeout
+
+	if instructions_label:
+		var tween = create_tween()
+		tween.tween_property(instructions_label, "modulate:a", 0.0, 2.0)
+		await tween.finished
+		instructions_label.visible = false
+		print("Instructions faded out")
 
 func setup_background_music():
 	print("🎵 Setting up background music...")

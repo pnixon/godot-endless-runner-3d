@@ -16,7 +16,7 @@ modules="org.godotengine.godot.GodotGooglePlayBilling"
 
 config/name="Endless Runner 3D"
 config/description="A fast-paced 3D endless runner prototype"
-run/main_scene="res://scenes/EndlessRunner.tscn"
+run/main_scene="res://scenes/DemoLauncher.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://assets/icon.svg"
 
